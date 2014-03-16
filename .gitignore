@@ -1,6 +1,7 @@
 **/ebin
 **/*.swp
 **/*.beam
+**/.eunit
 web/sprites/*.meta
 deps
 rel/station
