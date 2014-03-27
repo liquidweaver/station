@@ -8,3 +8,5 @@ test:
 	@$(REBAR) skip_deps=true eunit
 clean:
 	@$(REBAR) clean
+generate: compile
+	@cd rel && rebar generate
