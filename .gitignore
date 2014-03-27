@@ -1,0 +1,6 @@
+**/ebin
+**/*.swp
+**/*.beam
+deps
+rel/station
+.rebar
