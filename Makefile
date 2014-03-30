@@ -1,5 +1,6 @@
 REBAR=`which rebar`
-all: deps compile
+SPRITES := $(patsubst %.dmi,%.meta,$(wildcard web/sprites/*.dmi))
+all: deps compile $(SPRITES)
 deps:
 	@$(REBAR) get-deps
 compile:
@@ -10,3 +11,6 @@ clean:
 	@$(REBAR) clean
 generate: compile
 	@cd rel && rebar generate
+
+%.meta : %.dmi
+	identify -verbose $< | sed -n '/BEGIN DMI/,/END DMI/p' | sed /#/d > $@
