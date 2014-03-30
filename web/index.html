@@ -1,0 +1,38 @@
+<html>
+<head>
+	<script defer>
+		function loadImages(sources, callback) {
+			var assetDir = 'sprites/';
+			var imageExtension = '.dmi';
+			var metaExtension = '.meta';
+			var images = {};
+			var loadedImages = 0;
+			var numImages = 0;
+			for(var src in sources) {
+				numImages++;
+			}
+			for(var src in sources) {
+				images[src] = new Image();
+				images[src].onload = function() {
+					if(++loadedImages >= numImages) {
+						callback(images);
+					}
+				};
+				images[src].src = assetDir + sources[src] + imageExtension;
+				images[src].meta = assetDir + sources[src] + metaExtension;
+			}
+		}
+
+		var sources = {
+			floors: 'floors',
+		};
+
+		loadImages(sources, function() {
+			console.log("done");
+		});
+
+</script>
+</head>
+<body>
+</body>
+</html>
