@@ -28,13 +28,40 @@
 		}
 
 		function parse_meta( dmi_meta ) {
-			console.log( dmi_meta );
-			return dmi_meta;
+			var reKeyVal = /(.+) = (.+)/g
+			var meta = {};
+			var states = {};
+			var curState = "";
+			var lastState = "";
+			var curFrameOffset = 0;
+
+			while ((kv = reKeyVal.exec(dmi_meta)) !== null) {
+				var key = kv[1], val = kv[2];
+				if ( key == "version" ) {
+					if ( val != "4.0" ) throw "Cannot decode DMI version" + val
+				}
+				else if ( key == "state" ) {
+					lastState = curState;
+					curState = val.replace(/(^")|("$)/g, '');
+					if (lastState != "" ) {
+						var dirs = states[lastState]["dirs"]  || 0;
+						var frames = states[lastState]["frames"] || 0;
+						curFrameOffset += Math.max( 1, dirs, frames );
+					}
+					states[curState] = { frameOffset: curFrameOffset };
+				}
+				else {
+					var prop = /\s+(.*)/.exec(key)[1];
+					if (states[curState])
+						states[curState][prop] = val;
+					else
+						meta[prop] = val;
+				}
+			}
+			meta["states"] = states;
+			return meta;
 		}
 
-		var sources = {
-			floors: 'floors',
-		};
 
 		loadAssets(sources, function(images) {
 			console.log("done");
