@@ -1,25 +1,28 @@
 <html>
 <head>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	<script defer>
-		function loadImages(sources, callback) {
+		function loadAssets(sources, callback) {
 			var assetDir = 'sprites/';
 			var imageExtension = '.dmi';
 			var metaExtension = '.meta';
 			var images = {};
-			var loadedImages = 0;
-			var numImages = 0;
-			for(var src in sources) {
-				numImages++;
-			}
+			var loadedAssets = 0;
+			var numAssets = Object.keys(sources).length * 2;
+
 			for(var src in sources) {
 				images[src] = new Image();
 				images[src].onload = function() {
-					if(++loadedImages >= numImages) {
+					if(++loadedAssets >= numAssets) {
 						callback(images);
 					}
 				};
 				images[src].src = assetDir + sources[src] + imageExtension;
-				images[src].meta = assetDir + sources[src] + metaExtension;
+				images[src].meta = $.get(  assetDir + sources[src] + metaExtension, function() {
+					if(++loadedAssets >= numAssets) {
+						callback(images);
+					}
+				});
 			}
 		}
 
@@ -27,7 +30,7 @@
 			floors: 'floors',
 		};
 
-		loadImages(sources, function() {
+		loadAssets(sources, function() {
 			console.log("done");
 		});
 
