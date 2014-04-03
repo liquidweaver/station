@@ -6,6 +6,11 @@
 			floors: 'floors',
 			cryogenic2: 'cryogenic2'
 		};
+		var canvas_width = 8, canvas_height = 8; // in tiles
+
+		frameBuffer = document.createElement("canvas");
+		frameBuffer.width = 32 * canvas_width;
+		frameBuffer.height = 32 * canvas_height;
 
 		function loadAssets(sources, callback) {
 			var assetDir = 'sprites/';
@@ -69,13 +74,46 @@
 			return meta;
 		}
 
+		function draw_sprite( bank_name, state, x, y, images, dest_ctx ) {
+			var width = images[bank_name].meta.width,
+					height = images[bank_name].meta.height;
+
+			var framesWide = images[bank_name].width / width;
+			var frameOffset = images[bank_name].meta.states[state].frameOffset;
+			var sx = (frameOffset % framesWide) * width,
+					sy = Math.floor(frameOffset / framesWide) * height;
+			var px = x * 32, py = y * 32;
+
+			dest_ctx.drawImage( images[bank_name], sx, sy, width, height, px, py, width, height );
+		}
+
+		//functions
+		var draw_sprite_fb, update_canvas;
+
 
 		loadAssets(sources, function(images) {
+			var canvas = document.getElementById( "main_canvas" );
+			var ctx = canvas.getContext("2d");
+			draw_sprite_fb = function( bank_name, state, x, y ) {
+				draw_sprite( bank_name, state, x, y, images, frameBuffer.getContext("2d") );
+			}
+			update_canvas = function() {
+				ctx.drawImage( frameBuffer, 0, 0 );
+			}
+			for ( x  = 0; x < 4; x++ ) {
+				for ( y  = 0; y < 4; y++ ) {
+					draw_sprite_fb( "floors", "floor", x, y );
+				}
+			}
+			draw_sprite_fb( "cryogenic2", "body_scanner_0", 1, 1);
+			draw_sprite_fb( "cryogenic2", "body_scanner_0-r", 1, 2);
+			update_canvas();
 			console.log("done");
 		});
 
 </script>
 </head>
 <body>
+	<canvas id="main_canvas"></canvas>
 </body>
 </html>
