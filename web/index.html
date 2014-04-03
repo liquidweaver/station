@@ -25,10 +25,12 @@
 				images[src] = new Image();
 				images[src].onload = loaded_callback;
 				images[src].src = assetDir + sources[src] + imageExtension;
-				$.get(  assetDir + sources[src] + metaExtension, function( data ) {
-					images[src].meta = parse_meta( data );
-					loaded_callback();
-				});
+				(function(bank){
+					$.get(  assetDir + sources[src] + metaExtension, function( data ) {
+						images[bank].meta = parse_meta( data );
+						loaded_callback();
+					});
+				})(src);
 			}
 		}
 
