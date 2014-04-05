@@ -1,7 +1,6 @@
-{application, station,
- [
+{application, station, [
   {description, "station simulation"},
-  {vsn, "1"},
+  {vsn, git},
   {registered, [station_sup]},
   {applications, [
                   kernel,
@@ -9,6 +8,6 @@
                   lager,
                   cowboy
                  ]},
-  {mod, { station_app, []}},
+  {mod, {station_app, []}},
   {env, []}
  ]}.
