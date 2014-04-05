@@ -13,14 +13,21 @@
 			var cryo_top = {
 				bank: "cryogenic2",
 				state: "celltop_1",
-				start: clock,
+				start: 0,
 			};
 
 			var cryo_bottom = {
 				bank: "cryogenic2",
 				state: "cellbottom",
-				start: clock,
+				start: 0,
 			};
+
+			var freezer = {
+				bank: "cryogenic2",
+				state: "freezer_1",
+				direction: 2,
+				start: 0,
+			}
 
 			for ( x = 0; x <  canvas_width; x++ ) {
 				for ( y = 0; y < canvas_height; y++ ) {
@@ -30,6 +37,7 @@
 
 			sample_data['4,4'].push(cryo_top);
 			sample_data['4,5'].push(cryo_bottom);
+			sample_data['5,5'].push(freezer);
 
 			return sample_data;
 		}

@@ -460,6 +460,7 @@ function parse_raw_dmi_meta( raw_dmi_meta ) {
   return meta;
 }
 
+//TODO: Check if requested direction is valid
 function draw_sprite( sprite, x, y, clock, image_banks, dest_ctx ) {
   var image_bank = image_banks[sprite.bank];
   var width = image_bank.meta.width,
@@ -469,10 +470,12 @@ function draw_sprite( sprite, x, y, clock, image_banks, dest_ctx ) {
   var framesWide = image_bank.width / width;
   var state_meta = image_bank.meta.states[sprite.state];
   var frameOffset = state_meta.frameOffset;
-  if ( state_meta.clock_frames && sprite.start ) {
+  var direction = Number(sprite.direction || 1);
+  if ( state_meta.clock_frames && 'undefined' != typeof sprite.start ) {
       var animOffset = state_meta.clock_frames[ (clock - sprite.start) % state_meta.clock_frames.length ];
-      frameOffset += animOffset;
+      frameOffset += animOffset * state_meta.dirs;
   }
+  frameOffset += direction - 1;
   var sx = (frameOffset % framesWide) * width,
       sy = Math.floor(frameOffset / framesWide) * height;
   var px = x * 32, py = y * 32;
