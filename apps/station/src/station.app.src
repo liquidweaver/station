@@ -2,10 +2,12 @@
  [
   {description, "station simulation"},
   {vsn, "1"},
-  {registered, []},
+  {registered, [station_sup]},
   {applications, [
                   kernel,
-                  stdlib
+                  stdlib,
+                  lager,
+                  cowboy
                  ]},
   {mod, { station_app, []}},
   {env, []}

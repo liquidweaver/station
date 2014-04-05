@@ -10,6 +10,15 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
+    Dispatch = cowboy_router:compile([
+        %% {URIHost, list({URIPath, Handler, Opts})}
+        {'_', [{'_', ws_handler, []}]}
+    ]),
+    %% Name, NbAcceptors, TransOpts, ProtoOpts
+    cowboy:start_http(http_listener, 100,
+        [{port, 8080}],
+        [{env, [{dispatch, Dispatch}]}]
+    ),
     station_sup:start_link().
 
 stop(_State) ->
