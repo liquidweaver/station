@@ -1,0 +1,11 @@
+{
+	"folders":
+	[
+		{
+			"follow_symlinks": true,
+			"path": ".",
+      "file_exclude_patterns": ["*.beam", "*.dmi"],
+      "folder_exclude_patterns": [".eunit", ".rebar", "ebin"]
+		}
+	]
+}
