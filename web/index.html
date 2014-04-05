@@ -3,79 +3,84 @@
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	<script src="assets.js"></script>
 	<script defer>
+		function sample_world_data(){
+			var sample_data = {};
+			var basic_floor = {
+				bank: "floors",
+				state: "floor"
+			};
 
-		var canvas_width = 15, canvas_height = 15; // in tiles
-		var clock = 597; //arbitrarily chosen
+			var cryo_top = {
+				bank: "cryogenic2",
+				state: "celltop_1",
+				start: clock,
+			};
 
-		var basic_floor = {
-			bank: "floors",
-			state: "floor"
-		};
+			var cryo_bottom = {
+				bank: "cryogenic2",
+				state: "cellbottom",
+				start: clock,
+			};
 
-		var cryo_top = {
-			bank: "cryogenic2",
-			state: "celltop_1",
-			start: clock,
-		};
-
-		var cryo_bottom = {
-			bank: "cryogenic2",
-			state: "cellbottom",
-			start: clock,
-		};
-
-		var world_data = {}; //TODO: update from a websocket
-		for ( x = 0; x <  canvas_width; x++ ) {
-			for ( y = 0; y < canvas_height; y++ ) {
-				world_data[ x + ',' + y] = [basic_floor];
+			for ( x = 0; x <  canvas_width; x++ ) {
+				for ( y = 0; y < canvas_height; y++ ) {
+					sample_data[ x + ',' + y] = [basic_floor];
+				}
 			}
+
+			sample_data['4,4'].push(cryo_top);
+			sample_data['4,5'].push(cryo_bottom);
+
+			return sample_data;
 		}
 
-		world_data['4,4'].push(cryo_top);
-		world_data['4,5'].push(cryo_bottom);
-
-
-		frameBuffer = document.createElement("canvas");
-		frameBuffer.width = 32 * canvas_width;
-		frameBuffer.height = 32 * canvas_height;
-
-		world_pos = { x: 7, y: 7 };
-		function update_framebuffer() {
+		function update_framebuffer( player_tile_position, world_data) {
 			var delta_x = (canvas_width - 1) / 2,
 			delta_y = (canvas_height - 1) / 2;  
 
-			for ( x = world_pos.x - delta_x; x < world_pos.x + delta_x; x++ ) {
-				for ( y = world_pos.y - delta_y; y < world_pos.x + delta_y; y++ ) {
+			for ( x = player_tile_position.x - delta_x; x < player_tile_position.x + delta_x; x++ ) {
+				for ( y = player_tile_position.y - delta_y; y < player_tile_position.x + delta_y; y++ ) {
 					var tile = world_data[ x + ',' + y];
-					var abs_x = x - world_pos.x + delta_x,
-					abs_y = y - world_pos.y + delta_y;
-					tile.forEach( function(sprite) {
-						draw_sprite_fb( sprite.bank, sprite.state, abs_x, abs_y, sprite.start );
+					var abs_x = x - player_tile_position.x + delta_x,
+					abs_y = y - player_tile_position.y + delta_y;
+					tile.forEach( function(sprite) { //Ordinal position of sprite in tile array is z-position
+						draw_sprite_fb( sprite, abs_x, abs_y );
 					})
 				}
 			}
 		}
 
-
 		//functions
 		var draw_sprite_fb, update_canvas;
 
-		loadAssets(sources, function(images) {
+		//globals - yuck
+		var canvas_width = 15, canvas_height = 15; // in tiles
+		var clock = 597; //arbitrarily chosen
+		var world_data = sample_world_data(); //TODO: update from a websocket
+		var world_pos = { x: 7, y: 7 };
+
+		frameBuffer = document.createElement("canvas");
+		frameBufferCtx = frameBuffer.getContext("2d");
+		frameBuffer.width = 32 * canvas_width;
+		frameBuffer.height = 32 * canvas_height;
+
+		loadAssets(sources, function(image_banks) {
 			var canvas = document.getElementById( "main_canvas" );
 			canvas.width = frameBuffer.width;
 			canvas.height = frameBuffer.height;
 			var ctx = canvas.getContext("2d");
-			draw_sprite_fb = function( bank_name, state, x, y, start ) {
-				draw_sprite( bank_name, state, x, y, start, clock, images, frameBuffer.getContext("2d") );
+			draw_sprite_fb = function( sprite, x, y ) {
+				draw_sprite( sprite, x, y, clock, image_banks, frameBufferCtx );
 			}
 			update_canvas = function() {
 				ctx.drawImage( frameBuffer, 0, 0 );
 			}
 
 			console.log("Assets loaded.");
+
 			setInterval( function() {
 				clock++;
-				update_framebuffer();
+				update_framebuffer( world_pos, world_data );
 				update_canvas();
 			}, 250)
 		});

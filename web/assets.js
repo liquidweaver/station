@@ -384,23 +384,23 @@ function loadAssets(sources, callback) {
   var assetDir = 'sprites/';
   var imageExtension = '.dmi';
   var metaExtension = '.meta';
-  var images = {};
+  var image_banks = {};
   var loadedAssets = 0;
   var numAssets = Object.keys(sources).length * 2;
 
   loaded_callback = function() {
     if(++loadedAssets >= numAssets) {
-      callback(images);
+      callback(image_banks);
     }
   };
 
   for(var src in sources) {
-    images[src] = new Image();
-    images[src].onload = loaded_callback;
-    images[src].src = assetDir + sources[src] + imageExtension;
+    image_banks[src] = new Image();
+    image_banks[src].onload = loaded_callback;
+    image_banks[src].src = assetDir + sources[src] + imageExtension;
     (function(bank){
       $.get(  assetDir + sources[src] + metaExtension, function( data ) {
-        images[bank].meta = parse_meta( data );
+        image_banks[bank].meta = parse_raw_dmi_meta( data );
         loaded_callback();
       });
     })(src);
@@ -423,19 +423,19 @@ function clock_frame_map( delay_array ) {
   return clock_frames;
 }
 
-function parse_meta( dmi_meta ) {
+function parse_raw_dmi_meta( raw_dmi_meta ) {
   var reKeyVal = /(.+) = (.+)/g
   var meta = {};
   var states = {};
   var curState = undefined;
   var curFrameOffset = 0;
 
-  while ((kv = reKeyVal.exec(dmi_meta)) !== null) {
+  while ((kv = reKeyVal.exec(raw_dmi_meta)) !== null) {
     var key = kv[1], val = kv[2];
     if ( key == "version" ) {
       if ( val != "4.0" ) throw "Cannot decode DMI version" + val
     }
-    else if ( key == "state" ) {
+    else if ( key == "state" ) {    // We are defining a new state
       if ( typeof curState != "undefined" ) {
         var dirs = states[curState]["dirs"]  || 1;
         var frames = states[curState]["frames"] || 1;
@@ -445,13 +445,13 @@ function parse_meta( dmi_meta ) {
 
       states[curState] = { frameOffset: curFrameOffset };
     }
-    else {
+    else {                          // Set a property of this state
       var prop = /\s+(.*)/.exec(key)[1];
       if (states[curState])
         states[curState][prop] = val;
         if ( prop == "delay")
           states[curState]["clock_frames"] = clock_frame_map( val.split(',') );
-      else
+      else                          //Set a global property for this image_bank
         meta[prop] = val;
 
     }
@@ -460,16 +460,17 @@ function parse_meta( dmi_meta ) {
   return meta;
 }
 
-function draw_sprite( bank_name, state, x, y, start, clock, images, dest_ctx ) {
-  var image_bank = images[bank_name];
+function draw_sprite( sprite, x, y, clock, image_banks, dest_ctx ) {
+  var image_bank = image_banks[sprite.bank];
   var width = image_bank.meta.width,
   height = image_bank.meta.height;
 
 
   var framesWide = image_bank.width / width;
-  var frameOffset = image_bank.meta.states[state].frameOffset;
-  if ( image_bank.meta.states[state].clock_frames && start ) {
-      var animOffset = image_bank.meta.states[state].clock_frames[ (clock - start) % image_bank.meta.states[state].clock_frames.length ];
+  var state_meta = image_bank.meta.states[sprite.state];
+  var frameOffset = state_meta.frameOffset;
+  if ( state_meta.clock_frames && sprite.start ) {
+      var animOffset = state_meta.clock_frames[ (clock - sprite.start) % state_meta.clock_frames.length ];
       frameOffset += animOffset;
   }
   var sx = (frameOffset % framesWide) * width,
