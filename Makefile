@@ -2,13 +2,13 @@ REBAR=`which rebar`
 SPRITES := $(patsubst %.dmi,%.meta,$(wildcard web/sprites/*.dmi))
 all: deps compile $(SPRITES)
 deps:
-	@$(REBAR) get-deps
+	@$(REBAR) -r get-deps
 compile:
-	@$(REBAR) compile
+	@$(REBAR) -r compile
 test:
-	@$(REBAR) skip_deps=true eunit
+	@$(REBAR) -r skip_deps=true eunit
 clean:
-	@$(REBAR) clean
+	@$(REBAR) -r clean
 generate: compile
 	@cd rel && rebar generate
 
