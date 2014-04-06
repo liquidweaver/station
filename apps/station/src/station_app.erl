@@ -16,7 +16,7 @@ start(_StartType, _StartArgs) ->
     ]),
     %% Name, NbAcceptors, TransOpts, ProtoOpts
     cowboy:start_http(http_listener, 100,
-        [{port, 8080}],
+        [{port, 9001}],
         [{env, [{dispatch, Dispatch}]}]
     ),
     station_sup:start_link().

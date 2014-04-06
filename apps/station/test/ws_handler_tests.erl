@@ -20,8 +20,8 @@ websocket_handle_should_take_no_action_on_non_text_messages_test() ->
   Actual = ws_handler:websocket_handle({wtf, mate}, req1, state1),
   ?assertEqual( Expected, Actual ).
 
-websocket_info_should_send_nothing_on_timeout_test() ->
-  Expected = {ok, req1, state1},
+websocket_info_should_send_message_on_timeout_test() ->
+  Expected = {reply, {text, msg1}, req1, state1},
   Actual = ws_handler:websocket_info( {timeout, ref1, msg1}, req1, state1),
   ?assertEqual( Expected, Actual ).
 

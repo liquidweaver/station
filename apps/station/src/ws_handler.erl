@@ -20,8 +20,8 @@ websocket_handle({text, Msg}, Req, State) ->
 websocket_handle(_Data, Req, State) ->
     {ok, Req, State}.
  
-websocket_info({timeout, _Ref, _Msg}, Req, State) ->
-    {ok, Req, State};
+websocket_info({timeout, _Ref, Msg}, Req, State) ->
+    {reply, {text, Msg}, Req, State};
  
 websocket_info(_Info, Req, State) ->
     {ok, Req, State}.
