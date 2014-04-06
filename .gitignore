@@ -6,3 +6,4 @@ web/sprites/*.meta
 deps
 rel/station
 .rebar
+station.sublime-workspace
