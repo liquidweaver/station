@@ -3,44 +3,6 @@
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	<script src="assets.js"></script>
 	<script defer>
-		function sample_world_data(){
-			var sample_data = {};
-			var basic_floor = {
-				bank: "floors",
-				state: "floor"
-			};
-
-			var cryo_top = {
-				bank: "cryogenic2",
-				state: "celltop_1",
-				start: 0,
-			};
-
-			var cryo_bottom = {
-				bank: "cryogenic2",
-				state: "cellbottom",
-				start: 0,
-			};
-
-			var freezer = {
-				bank: "cryogenic2",
-				state: "freezer_1",
-				direction: 2,
-				start: 0,
-			}
-
-			for ( x = 0; x <  canvas_width; x++ ) {
-				for ( y = 0; y < canvas_height; y++ ) {
-					sample_data[ x + ',' + y] = [basic_floor];
-				}
-			}
-
-			sample_data['4,4'].push(cryo_top);
-			sample_data['4,5'].push(cryo_bottom);
-			sample_data['5,5'].push(freezer);
-
-			return sample_data;
-		}
 
 		function update_framebuffer( player_tile_position, world_data) {
 			var delta_x = (canvas_width - 1) / 2,
@@ -64,7 +26,7 @@
 		//globals - yuck
 		var canvas_width = 15, canvas_height = 15; // in tiles
 		var clock = 597; //arbitrarily chosen
-		var world_data = sample_world_data(); //TODO: update from a websocket
+		var world_data = {};
 		var world_pos = { x: 7, y: 7 };
 
 		frameBuffer = document.createElement("canvas");
