@@ -9,9 +9,9 @@ test:
 	@$(REBAR) -r skip_deps=true eunit
 clean:
 	@$(REBAR) -r skip_deps=true clean
-generate: compile
+generate: 
 	@cd rel && rebar generate
-start: generate
+start: compile generate
 	rel/station/bin/station console
 
 %.meta : %.dmi
