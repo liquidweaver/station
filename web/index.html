@@ -1,86 +1,41 @@
 <html>
 <head>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/overcast/jquery-ui.css" type="text/css" rel="stylesheet"></link>
 	<script src="assets.js"></script>
+	<script src="js/display.js"></script>
+	<script src="js/protocol.js"></script>
 	<script defer>
+	$(document).ready( function() {
+		var display = new Display( $('#main_canvas')[0], 15, 15);
+		var protocol = new Protocol( display );
+		$.globals = {
+			Display : display,
+			Protocol : protocol,
+		};
 
-		function update_framebuffer( player_tile_position, world_data) {
-			var delta_x = (canvas_width - 1) / 2,
-			delta_y = (canvas_height - 1) / 2;  
-
-			for ( x = player_tile_position.x - delta_x; x < player_tile_position.x + delta_x; x++ ) {
-				for ( y = player_tile_position.y - delta_y; y < player_tile_position.x + delta_y; y++ ) {
-					var tile = world_data[ x + ',' + y];
-					var abs_x = x - player_tile_position.x + delta_x,
-					abs_y = y - player_tile_position.y + delta_y;
-					tile.forEach( function(sprite) { //Ordinal position of sprite in tile array is z-position
-						draw_sprite_fb( sprite, abs_x, abs_y );
-					})
-				}
-			}
-		}
-
-		//functions
-		var draw_sprite_fb, update_canvas;
-
-		//globals - yuck
-		var canvas_width = 15, canvas_height = 15; // in tiles
-		var clock = 597; //arbitrarily chosen
-		var world_data = {};
-		var world_pos = { x: 7, y: 7 };
-
-		frameBuffer = document.createElement("canvas");
-		frameBufferCtx = frameBuffer.getContext("2d");
-		frameBuffer.width = 32 * canvas_width;
-		frameBuffer.height = 32 * canvas_height;
-
-		loadAssets(sources, function(image_banks) {
-			var canvas = document.getElementById( "main_canvas" );
-			canvas.width = frameBuffer.width;
-			canvas.height = frameBuffer.height;
-			var ctx = canvas.getContext("2d");
-			draw_sprite_fb = function( sprite, x, y ) {
-				draw_sprite( sprite, x, y, clock, image_banks, frameBufferCtx );
-			}
-			update_canvas = function() {
-				ctx.drawImage( frameBuffer, 0, 0 );
-			}
-
-			console.log("Assets loaded.");
-
-			var server_socket = new WebSocket('ws://home.joshuaweaver.com:9001/');
-			server_socket.onopen = function(){
-				/*Send a small message to the console once the connection is established */
-				console.log('Connection open!');
-			}
-			server_socket.onclose = function(){
-				console.log('Connection closed');
-			}
-			server_socket.onerror = function(error){
-				console.log('Error detected: ' + error);
-			}
-			server_socket.onmessage = function(e){
-				var server_message = e.data;
-				msg = JSON.parse( e.data );
-				if (msg.world_data) {
-					for ( coordinate in msg.world_data ) {
-						world_data[coordinate] = msg.world_data[coordinate];
-					}
-					console.log( 'world_data recieved. ' + Object.keys(msg.world_data).length + ' tiles.');
-				}
-			}
-
-			setInterval( function() {
-				clock++;
-				update_framebuffer( world_pos, world_data );
-				update_canvas();
-			}, 250)
-});
-
-
+		$( "#connect_btn" )
+			.button()
+			.click(function( event ) {
+				$.globals.Protocol.connect_websocket( $('#server_url').value );
+				event.preventDefault();
+			});
+	});
 </script>
 </head>
 <body>
-	<canvas id="main_canvas"></canvas>
+	<div>
+		<div>
+			<fieldset>
+				<label for="username">Username</label><input type="text" id="username"><br>
+				<label for="server_url">Server URL</label><input type="text" id="server_url" value="ws://home.joshuaweaver.com:9001/">
+				<button class"ui-button" id="connect_btn">Connect</button>
+			</fieldset>
+		</div>
+		<div>
+			<canvas id="main_canvas"></canvas>
+		</div>
+	</div>
 </body>
 </html>
