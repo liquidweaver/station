@@ -24,7 +24,7 @@ handle_info(Msg, State) ->
 
 view_world() -> ok.
 
-handle_call( view, _From, State = #s_client_state{ tiles = Tiles }) ->
+handle_call( view, _From, State = #client_state{ tiles = Tiles }) ->
 	TilesString = tiles_to_string( Tiles ),
 	{reply, TilesString, State}.
 

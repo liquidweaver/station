@@ -1,2 +1,2 @@
 -record( tile, {x, y, contents = nothing} ).
--record( s_client_state, { x,y, tiles } ).
+-record( client_state, { x,y, tiles, username } ).

@@ -8,9 +8,9 @@ Protocol.prototype.server_socket = null;
 Protocol.prototype.url = "ws://localhost:9001/";
 
 Protocol.prototype.handler_need_login  = function( login_request ) {
-  var username = getElementById("username").value;
+  var username = document.getElementById("username").value;
 
-  this.server_socket.send_message("username", username);
+  this.server_socket.send(JSON.stringify( {"username": username} ) );
 };
 
 Protocol.prototype.handler_tile_data = function( tile_data ) {
