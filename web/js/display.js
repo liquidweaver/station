@@ -1,3 +1,4 @@
+/*jshint loopfunc: true */
 function Display(canvas, tiles_wide, tiles_high) {
   this.canvas = canvas;
   this.tile_width = tiles_wide;
@@ -27,17 +28,17 @@ Display.prototype.mainCtx = undefined;
 
 Display.prototype.draw_sprite_fb = function( sprite, x, y ) {
   this.draw_sprite( sprite, x, y, this.frameBufferCtx );
-}
+};
 
 Display.prototype.update_canvas = function() {
   this.mainCtx.drawImage( this.frameBuffer, 0, 0 );
-}
+};
 
 Display.prototype.tick = function() {
   this.clock++;
   this.update_framebuffer();
   this.update_canvas();
-}
+};
 
 Display.prototype.loadAssets = function(sources, callback) {
   var assetDir = 'sprites/';
@@ -54,7 +55,7 @@ Display.prototype.loadAssets = function(sources, callback) {
       _this.mainCtx = _this.canvas.getContext("2d");
 
       console.log("Assets loaded.");
-      setInterval(function(){_this.tick()}, 250);
+      setInterval(function(){_this.tick();}, 250);
     }
   };
 
@@ -69,7 +70,7 @@ Display.prototype.loadAssets = function(sources, callback) {
       });
     })(src, this);
   }
-}
+};
 
 Display.prototype.draw_sprite = function( sprite, x, y, dest_ctx ) {
   var image_bank = this.image_banks[sprite.bank];
@@ -82,33 +83,35 @@ Display.prototype.draw_sprite = function( sprite, x, y, dest_ctx ) {
   var frameOffset = state_meta.frameOffset;
   var direction = Number(sprite.direction || 1);
   if ( state_meta.clock_frames && 'undefined' != typeof sprite.start ) {
-      var animOffset = state_meta.clock_frames[ (this.clock - sprite.start) % state_meta.clock_frames.length ];
-      frameOffset += animOffset * state_meta.dirs;
+    var animOffset = state_meta.clock_frames[ (this.clock - sprite.start) % state_meta.clock_frames.length ];
+    frameOffset += animOffset * state_meta.dirs;
   }
   frameOffset += direction - 1;
   var sx = (frameOffset % framesWide) * width,
-      sy = Math.floor(frameOffset / framesWide) * height;
+  sy = Math.floor(frameOffset / framesWide) * height;
   var px = x * 32, py = y * 32;
 
   dest_ctx.drawImage( image_bank, sx, sy, width, height, px, py, width, height );
-}
+};
 
 Display.prototype.update_framebuffer = function() {
-    var delta_x = (this.tile_width - 1) / 2,
-        delta_y = (this.tile_height - 1) / 2;
-    var player_pos = this.world_pos;
+  var delta_x = (this.tile_width - 1) / 2,
+  delta_y = (this.tile_height - 1) / 2;
+  var player_pos = this.world_pos;
 
-    for ( x = player_pos.x - delta_x; x < player_pos.x + delta_x; x++ ) {
-      for ( y = player_pos.y - delta_y; y < player_pos.x + delta_y; y++ ) {
-        var tile = this.tile_data[ x + ',' + y];
+  for ( x = player_pos.x - delta_x; x < player_pos.x + delta_x; x++ ) {
+    for ( y = player_pos.y - delta_y; y < player_pos.x + delta_y; y++ ) {
+      var tile = this.tile_data[ x + ',' + y];
+      if ( typeof tile != 'undefined' ) {
         var abs_x = x - player_pos.x + delta_x,
         abs_y = y - player_pos.y + delta_y;
         for ( t = 0; t < tile.length; t ++ ) {
           this.draw_sprite_fb( tile[t], abs_x, abs_y );
         }
+      }
     }
   }
-}
+};
 
 Display.prototype.clock_frame_map = function( delay_array ) {
   var clock_frames = [];
@@ -124,24 +127,24 @@ Display.prototype.clock_frame_map = function( delay_array ) {
   });
 
   return clock_frames;
-}
+};
 
 Display.prototype.parse_raw_dmi_meta = function( raw_dmi_meta ) {
-  var reKeyVal = /(.+) = (.+)/g
+  var reKeyVal = /(.+) = (.+)/g;
   var meta = {};
   var states = {};
-  var curState = undefined;
   var curFrameOffset = 0;
+  var curState;
 
   while ((kv = reKeyVal.exec(raw_dmi_meta)) !== null) {
     var key = kv[1], val = kv[2];
     if ( key == "version" ) {
-      if ( val != "4.0" ) throw "Cannot decode DMI version" + val
+      if ( val != "4.0" ) throw "Cannot decode DMI version" + val;
     }
     else if ( key == "state" ) {    // We are defining a new state
       if ( typeof curState != "undefined" ) {
-        var dirs = states[curState]["dirs"]  || 1;
-        var frames = states[curState]["frames"] || 1;
+        var dirs = states[curState].dirs  || 1;
+        var frames = states[curState].frames || 1;
         curFrameOffset += dirs * frames;
       }
       curState = val.replace(/(^")|("$)/g, '');
@@ -152,13 +155,13 @@ Display.prototype.parse_raw_dmi_meta = function( raw_dmi_meta ) {
       var prop = /\s+(.*)/.exec(key)[1];
       if (states[curState])
         states[curState][prop] = val;
-        if ( prop == "delay")
-          states[curState]["clock_frames"] = this.clock_frame_map( val.split(',') );
+      if ( prop == "delay")
+        states[curState].clock_frames = this.clock_frame_map( val.split(',') );
       else                          //Set a global property for this image_bank
         meta[prop] = val;
 
     }
   }
-  meta["states"] = states;
+  meta.states = states;
   return meta;
-}
+};
