@@ -8,7 +8,6 @@ function Display(canvas, tiles_wide, tiles_high) {
   this.frameBufferCtx = this.frameBuffer.getContext("2d");
   this.frameBuffer.width = 32 * this.tile_width;
   this.frameBuffer.height = 32 * this.tile_height;
-  this.world_pos = { x: 7, y: 7};
 
   this.loadAssets( sources, function(_this) {
 
@@ -21,7 +20,7 @@ Display.prototype.clock = 0;
 Display.prototype.tile_width = 0;
 Display.prototype.tile_height = 0;
 Display.prototype.tile_data = {};
-Display.prototype.world_pos = undefined;
+Display.prototype.world_pos = {x:0, y:0};
 Display.prototype.frameBuffer = undefined;
 Display.prototype.frameBufferCtx = undefined;
 Display.prototype.mainCtx = undefined;

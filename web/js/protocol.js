@@ -20,6 +20,12 @@ Protocol.prototype.handler_tile_data = function( tile_data ) {
   console.log( 'tile_data recieved. ' + Object.keys(tile_data).length + ' tiles.');
 };
 
+Protocol.prototype.handler_world_pos = function( position ) {
+  this.display.world_pos = position;
+
+  console.log( 'world_pos updated: ' + position.x + ',' + position.y);
+};
+
 Protocol.prototype.handler_error = function( error_msg ) {
   alert( error_msg );
 };
