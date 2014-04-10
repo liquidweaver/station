@@ -29,6 +29,22 @@ request( <<"send_tiles">>, _, State) ->
     ])}
     ]), State };
 
+request( <<"move_intent">>, <<"right">>, State = #client_state{ x = X, y = Y} ) ->
+  X1 = X + 1,
+  { object( world_pos, objects([{x, X1}, {y, Y} ]) ), State#client_state{ x = X1 } };
+
+request( <<"move_intent">>, <<"left">>, State = #client_state{ x = X, y = Y} ) ->
+  X1 = X - 1,
+  { object( world_pos, objects([{x, X1}, {y, Y} ]) ), State#client_state{ x = X1 } };
+
+request( <<"move_intent">>, <<"down">>, State = #client_state{ x = X, y = Y} ) ->
+  Y1 = Y + 1,
+  { object( world_pos, objects([{x, X}, {y, Y1} ]) ), State#client_state{ y = Y1 } };
+
+request( <<"move_intent">>, <<"up">>, State = #client_state{ x = X, y = Y} ) ->
+  Y1 = Y - 1,
+  { object( world_pos, objects([{x, X}, {y, Y1} ]) ), State#client_state{ y = Y1 } };
+
 request( Unknown, Data, State) ->
   {  {[{unknown_request, {[{ Unknown, Data }]} }]}, State }.
 

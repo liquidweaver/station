@@ -8,7 +8,7 @@
   <style type="text/css">
     /* make default button size sane */
     .ui-button-text {
-        font-size: .6em;
+      font-size: .6em;
     }
     label {
       font-family: sans-serif;
@@ -19,28 +19,41 @@
   <script src="js/display.js"></script>
   <script src="js/protocol.js"></script>
   <script defer>
-  $(document).ready( function() {
-    var display = new Display( $('#main_canvas')[0], 15, 15);
-    var protocol = new Protocol( display );
-    $.globals = {
-      Display : display,
-      Protocol : protocol,
-    };
+    $(document).ready( function() {
+      var display = new Display( $('#main_canvas')[0], 15, 15);
+      var protocol = new Protocol( display );
+      $.globals = {
+        Display : display,
+        Protocol : protocol,
+      };
 
-    $( "#connect_btn" )
+      $( "#connect_btn" )
       .button()
       .click(function( event ) {
         $.globals.Protocol.connect_websocket( $('#server_url').val() );
         event.preventDefault();
       });
-    $( "#login_btn" )
+      $( "#login_btn" )
       .button()
       .click(function( event ) {
         $.globals.Protocol.send_message( 'username', $('#username').val() );
         event.preventDefault();
       });
-  });
-</script>
+      $(document).keydown(function(e) {
+        console.log(e.keyCode);
+        switch(e.keyCode) {
+          case 37:
+            $.globals.Protocol.send_message( "move_intent", "left"); break;
+          case 38:
+            $.globals.Protocol.send_message( "move_intent", "up"); break;
+          case 39:
+            $.globals.Protocol.send_message( "move_intent", "right"); break;
+          case 40:
+            $.globals.Protocol.send_message( "move_intent", "down"); break;
+        }
+      });
+    });
+  </script>
 </head>
 <body>
   <div>
