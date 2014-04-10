@@ -16,12 +16,12 @@ websocket_init(_TransportName, Req, _Opts) ->
   {ok, Req, #client_state{} }.
  
 websocket_handle({text, Msg}, Req, State) ->
-  {ReplyType, ReplyData, State1} = try jiffy:decode(Msg) of
+  {ReplyData, State1} = try jiffy:decode(Msg) of
     {[{ MessageType, Data }]} -> client_handler:request( MessageType, Data, State )
   catch
     { error, Code } -> { error, Code, State }
   end,
-  Reply = jiffy:encode( {[{ ReplyType, ReplyData }]}),
+  Reply = jiffy:encode(ReplyData),
   {reply, {text, Reply}, Req, State1};
  
 websocket_handle(_Data, Req, State) ->

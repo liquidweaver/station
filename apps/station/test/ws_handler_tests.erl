@@ -15,7 +15,7 @@ websocket_terminate_should_return_ok_test() ->
 
 websocket_handle_delegates_text_requests_to_client_handler_request_test() ->
   meck:new(client_handler),
-  meck:expect( client_handler, request, 3, {replytype1, replydata1, state1} ),
+  meck:expect( client_handler, request, 3, {replydata1, state1} ),
 
   ws_handler:websocket_handle({text, <<"{ \"type\":\"data\" }">>}, req1, state1 ),
 
