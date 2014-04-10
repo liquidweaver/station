@@ -1,56 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Station!</title>
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
-	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/overcast/jquery-ui.css" type="text/css" rel="stylesheet">
-	<style type="text/css">
+  <title>Station!</title>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+  <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/overcast/jquery-ui.css" type="text/css" rel="stylesheet">
+  <style type="text/css">
     /* make default button size sane */
     .ui-button-text {
         font-size: .6em;
     }
-	</style>
-	<script src="assets.js"></script>
-	<script src="js/display.js"></script>
-	<script src="js/protocol.js"></script>
-	<script defer>
-	$(document).ready( function() {
-		var display = new Display( $('#main_canvas')[0], 15, 15);
-		var protocol = new Protocol( display );
-		$.globals = {
-			Display : display,
-			Protocol : protocol,
-		};
+    label {
+      font-family: sans-serif;
+      font-size: .8em;
+    }
+  </style>
+  <script src="assets.js"></script>
+  <script src="js/display.js"></script>
+  <script src="js/protocol.js"></script>
+  <script defer>
+  $(document).ready( function() {
+    var display = new Display( $('#main_canvas')[0], 15, 15);
+    var protocol = new Protocol( display );
+    $.globals = {
+      Display : display,
+      Protocol : protocol,
+    };
 
-		$( "#connect_btn" )
-			.button()
-			.click(function( event ) {
-				$.globals.Protocol.connect_websocket( $('#server_url').val() );
-				event.preventDefault();
-			});
-		$( "#login_btn" )
-			.button()
-			.click(function( event ) {
-				$.globals.Protocol.send_message( 'username', $('#username').val() );
-				event.preventDefault();
-			});
-	});
+    $( "#connect_btn" )
+      .button()
+      .click(function( event ) {
+        $.globals.Protocol.connect_websocket( $('#server_url').val() );
+        event.preventDefault();
+      });
+    $( "#login_btn" )
+      .button()
+      .click(function( event ) {
+        $.globals.Protocol.send_message( 'username', $('#username').val() );
+        event.preventDefault();
+      });
+  });
 </script>
 </head>
 <body>
-	<div>
-		<div>
-			<fieldset>
-				<label for="server_url">Server URL</label><input type="text" id="server_url" value="ws://home.joshuaweaver.com:9001/">
-				<button type="button" class="ui-button" id="connect_btn">Connect</button>
-				<label for="username">Username</label><input type="text" id="username">
-				<button type="button" class="ui-button" id="login_btn">Login</button>
-			</fieldset>
-		</div>
-		<div>
-			<canvas id="main_canvas"></canvas>
-		</div>
-	</div>
+  <div>
+    <div>
+      <fieldset>
+        <label for="server_url">Server URL</label><input type="text" id="server_url" value="ws://home.joshuaweaver.com:9001/">
+        <button type="button" class="ui-button" id="connect_btn">Connect</button>
+        <label for="username">Username</label><input type="text" id="username">
+        <button type="button" class="ui-button" id="login_btn">Login</button>
+      </fieldset>
+    </div>
+    <div>
+      <canvas id="main_canvas"></canvas>
+    </div>
+  </div>
 </body>
 </html>
