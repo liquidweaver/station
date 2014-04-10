@@ -18,6 +18,7 @@ else
 end
 
 guard :shell do
+  notification :terminal_notifier, activate: 'com.googlecode.iterm2'
   app = File.basename(Dir.pwd)
   watch(%r{^(.*/)?(?:src|test)/([^.].*?)(?:_tests?)?.erl$}) do |matches|
     filepath, subdir, modname = matches
@@ -43,7 +44,7 @@ guard :shell do
           elsif syntaxMatch = /\n\s*([^\n]+?): ([^\n]+?)(?:...\*failed\*).*?(?:line) (\d+).*?(?:\*\*(?:error|throw):)(.*?)\n\n/m.match(output)
             suite, test, line, details = syntaxMatch.captures
             n "#{test}", "#{suite}:#{line}", :failed
-            puts details
+            puts "#{suite}:#{test}:#{line}\n#{details}"
           else
             throw new exception
           end
