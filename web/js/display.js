@@ -35,6 +35,10 @@ Display.prototype.update_canvas = function() {
 
 Display.prototype.tick = function() {
   this.clock++;
+  this.redraw();
+};
+
+Display.prototype.redraw = function() {
   this.update_framebuffer();
   this.update_canvas();
 };

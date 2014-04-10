@@ -24,6 +24,7 @@ Protocol.prototype.handler_world_pos = function( position ) {
   this.display.world_pos = position;
 
   console.log( 'world_pos updated: ' + position.x + ',' + position.y);
+  this.display.redraw();
 };
 
 Protocol.prototype.handler_error = function( error_msg ) {
@@ -40,7 +41,6 @@ Protocol.prototype.send_message = function( msg_type, data ) {
 Protocol.prototype.connect_websocket = function() {
   this.server_socket = new WebSocket(this.url);
   this.server_socket.onopen = function(){
-    /*Send a small message to the console once the connection is established */
     console.log('Connection open!');
   };
   this.server_socket.onclose = function(){
