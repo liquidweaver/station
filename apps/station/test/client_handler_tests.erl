@@ -23,7 +23,7 @@ request_when_username_empty_should_send_error_test() ->
   Actual = client_handler:request(<<"username">>, <<>>, State),
   ?assertEqual( Expected, Actual ).
 
-request_when_request_tiles_should_send_sample_world_data_test() ->
+request_when_send_tiles_should_send_sample_world_data_test() ->
   State = #client_state{ username = bob },
   Expected = all_tile_data(State),
   Actual = client_handler:request(<<"send_tiles">>, <<>>, State),
