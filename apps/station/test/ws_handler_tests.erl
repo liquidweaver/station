@@ -15,21 +15,28 @@ websocket_handle_when_no_user_and_username_sent_should_set_username_and_send_wor
   Message = jiffy:encode( {[{<<"username">>, <<"bob">> }]} ),
   State = #client_state{},
   State1 = #client_state{ username = <<"bob">> },
-  Expected = {reply, {text, ?SAMPLE_WORLD_DATA}, req1, State1 },
+  Expected = {reply, {text, all_tile_data()}, req1, State1 },
   Actual = ws_handler:websocket_handle({text, Message}, req1, State),
   ?assertEqual( Expected, Actual ).
 
 websocket_handle_when_no_user_should_send_need_login_test() ->
-  Message = <<"{}">>,
+  Message = <<"{ \"send_tiles\":\"\" }">>,
   State = #client_state{},
   Expected = {reply, {text, jiffy:encode( {[{ <<"need_login">>, <<"Please pass your username.">>}]} )}, req1, State },
   Actual = ws_handler:websocket_handle({text, Message}, req1, State),
   ?assertEqual( Expected, Actual ).
 
-websocket_handle_when_user_should_send_sample_world_data_test() ->
-  Message = message1,
+websocket_handle_when_username_empty_should_send_error_test() ->
+  Message = <<"{ \"username\":\"\" }">>,
+  State = #client_state{},
+  Expected = {reply, {text, jiffy:encode( {[{ <<"error">>, <<"Invalid username.">>}]} )}, req1, State },
+  Actual = ws_handler:websocket_handle({text, Message}, req1, State),
+  ?assertEqual( Expected, Actual ).
+
+websocket_handle_when_request_tiles_should_send_sample_world_data_test() ->
+  Message = json_request( send_tiles, undefined ),
   State = #client_state{ username = bob },
-  Expected = {reply, {text, ?SAMPLE_WORLD_DATA}, req1, State },
+  Expected = {reply, {text, all_tile_data()}, req1, State },
   Actual = ws_handler:websocket_handle({text, Message}, req1, State),
   ?assertEqual( Expected, Actual ).
 
@@ -44,3 +51,9 @@ websocket_info_need_login_should_send_login_request_test() ->
 
 websocket_terminate_should_return_ok_test() ->
   ?assertEqual( ok, ws_handler:websocket_terminate( reason1, req1, state1 ) ).
+
+json_request( Type, Message ) ->
+  jiffy:encode( {[{ Type, Message }]}).
+
+all_tile_data() ->
+  json_request( tile_data, ?SAMPLE_WORLD_DATA ).

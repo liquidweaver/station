@@ -10,7 +10,7 @@ Protocol.prototype.url = "ws://localhost:9001/";
 Protocol.prototype.handler_need_login  = function( login_request ) {
   var username = document.getElementById("username").value;
 
-  this.server_socket.send(JSON.stringify( {"username": username} ) );
+  this.send_message( 'username', username );
 };
 
 Protocol.prototype.handler_tile_data = function( tile_data ) {
@@ -20,11 +20,15 @@ Protocol.prototype.handler_tile_data = function( tile_data ) {
   console.log( 'tile_data recieved. ' + Object.keys(tile_data).length + ' tiles.');
 };
 
-Protocol.prototype.send_message = function( web_socket, msg_type, data ) {
-  this.server_socket.send( JSON.stringify({
-    type: msg_type,
-    data: data
-  }));
+Protocol.prototype.handler_error = function( error_msg ) {
+  alert( error_msg );
+};
+
+Protocol.prototype.send_message = function( msg_type, data ) {
+  var obj = {};
+  if ( 'undefined' == typeof data) data = '';
+  obj[msg_type] = data;
+  this.server_socket.send( JSON.stringify(obj));
 };
 
 Protocol.prototype.connect_websocket = function() {
