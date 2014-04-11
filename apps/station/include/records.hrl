@@ -1,2 +1,3 @@
 -record( tile, {x, y, contents = nothing} ).
 -record( client_state, { x = 7, y = 7, tiles, username } ).
+-record( tile_state, { x, y, contents = [o_floor] } ).
