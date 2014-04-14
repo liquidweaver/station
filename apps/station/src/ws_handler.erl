@@ -27,6 +27,10 @@ websocket_handle({text, Msg}, Req, State) ->
 websocket_handle(_Data, Req, State) ->
   {ok, Req, State}.
  
+websocket_info( TileUpdateMsg = {tile_update, _, _}, Req, State) ->
+  client_handler:notification( TileUpdateMsg ),
+  {ok, Req, State };
+
 websocket_info(need_login, Req, State) ->
   {reply, {text, jiffy:encode( {[{ need_login, <<"Please pass your username.">> }]} )}, Req, State}.
  

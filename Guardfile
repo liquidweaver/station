@@ -41,10 +41,11 @@ guard :shell do
           if logicMatch = /\/([\w\.]+):(\d+):\s*(.*)$/.match(output)
             file, line, reason = logicMatch.captures
             n "#{reason}", "#{file}:#{line}", :failed
+            puts "#{file}:#{line}\n#{reason}"
           elsif syntaxMatch = /\n\s*([^\n]+?): ([^\n]+?)(?:...\*failed\*).*?(?:line) (\d+).*?(?:\*\*(?:error|throw):)(.*?)\n\n/m.match(output)
             suite, test, line, details = syntaxMatch.captures
             n "#{test}", "#{suite}:#{line}", :failed
-            puts "#{suite}:#{test}:#{line}\n#{details}"
+            puts output
           else
             throw new exception
           end

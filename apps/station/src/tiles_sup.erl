@@ -1,4 +1,5 @@
 -module(tiles_sup).
+-include("records.hrl").
 
 -behaviour(supervisor).
 
@@ -15,7 +16,11 @@ start_link() ->
   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-  {ok, { {one_for_one, 5, 10}, []} }.
+  Tiles = [ case X =:= Y of 
+              true -> ?CHILD( {X,Y}, tile, worker, {X,Y,[#thing {type = o_floor}, #thing{type = o_cryosleeper}]} );
+              false -> ?CHILD( {X,Y}, tile, worker, {X,Y} )
+            end || X <- lists:seq(0,29), Y <- lists:seq(0,29) ],
+  {ok, { {one_for_one, 5, 10}, Tiles} }.
 
 add_child(X,Y) ->
   supervisor:start_child( ?MODULE, ?CHILD( {X,Y}, tile, worker, {X,Y} ) ).

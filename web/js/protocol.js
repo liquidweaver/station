@@ -38,8 +38,8 @@ Protocol.prototype.send_message = function( msg_type, data ) {
   this.server_socket.send( JSON.stringify(obj));
 };
 
-Protocol.prototype.connect_websocket = function() {
-  this.server_socket = new WebSocket(this.url);
+Protocol.prototype.connect_websocket = function( url ) {
+  this.server_socket = new WebSocket( url || this.url );
   this.server_socket.onopen = function(){
     console.log('Connection open!');
   };
