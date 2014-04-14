@@ -34,6 +34,6 @@ websocket_info( TileUpdateMsg = {tile_update, _, _}, Req, State) ->
 websocket_info(need_login, Req, State) ->
   {reply, {text, jiffy:encode( {[{ need_login, <<"Please pass your username.">> }]} )}, Req, State}.
  
-websocket_terminate(_Reason, _Req, _State) ->
-  ok.
+websocket_terminate(_Reason, _Req, State) ->
+  client_handler:remove_player_from_world(State).
 

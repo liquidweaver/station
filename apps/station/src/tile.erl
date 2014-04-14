@@ -2,7 +2,7 @@
 -export([start_link/1]).
 -include("records.hrl").
 
--export([sprites/1, add_object/2, move_object/3, accept_object/2]).
+-export([sprites/1, add_object/2, move_object/3, accept_object/2, remove_object/2]).
 
 -export([coords_to_pid/1]).
 
@@ -36,6 +36,13 @@ accept_object( Coords = {X,Y}, Object ) when is_record( Object, thing) ->
     Pid       -> gen_server:call( Pid, {accept_object, Object} )
   end.
 
+remove_object( Coords = {X,Y}, Object ) when is_record( Object, thing) ->
+  case coords_to_pid(Coords) of
+    undefined -> {error, no_tile};
+    Pid       -> gen_server:call( Pid, {remove_object, Object} )
+  end.
+
+
 start_link(Args = {X,Y}) ->
   gen_server:start_link({local, coords_to_atom({X,Y})}, ?MODULE, Args, []);
 
@@ -59,10 +66,12 @@ handle_call(sprites, _From, State=#tile_state{ contents = Contents }) ->
 handle_call( {move_object, Object, To = {TX,TY} }, _From, State = #tile_state{ contents = Contents } ) ->
   % XXX check of object in contents
   Result = case tile:accept_object( To, Object ) of
-    ok              -> {reply, ok, State1 = State#tile_state{ contents = Contents -- [Object] } };
+    ok              -> {reply, ok, State#tile_state{ contents = Contents -- [Object] } };
     {error, Reason} -> {reply, {error, Reason}, State }
   end;
 
+handle_call( {remove_object, Object }, _From, State = #tile_state{contents = Contents}) ->
+  {reply, ok, State#tile_state{ contents = Contents -- [Object] } };
 
 handle_call( {accept_object, Object}, _From, State = #tile_state{ contents = Contents } ) ->
   {reply, ok, State#tile_state{ contents = Contents ++ [Object] } }; %%% XXX Stubbed

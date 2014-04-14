@@ -10,8 +10,16 @@ websocket_init_returns_new_client_state_state_test() ->
   Expected = {ok, req1, #client_state{} },
   ?assertEqual( Expected, ws_handler:websocket_init( transport1, req1, opts1 ) ).
 
-websocket_terminate_should_return_ok_test() ->
-  ?assertEqual( ok, ws_handler:websocket_terminate( reason1, req1, state1 ) ).
+websocket_terminate_should_call_client_handler_remove_player_and_return_result_test() ->
+  meck:new(client_handler),
+  Expected = result1,
+  meck:expect(client_handler, remove_player_from_world, 1, Expected),
+
+  Actual = ws_handler:websocket_terminate( reason1, req1, state1 ),
+
+  ?assertEqual ( Expected, Actual ),
+  ?assert( meck:called(client_handler, remove_player_from_world, [state1]) ),
+  meck:unload(client_handler).
 
 websocket_handle_delegates_text_requests_to_client_handler_request_test() ->
   meck:new(client_handler),

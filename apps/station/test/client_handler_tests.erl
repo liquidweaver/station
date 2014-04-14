@@ -3,6 +3,15 @@
 
 -include("records.hrl").
 
+remove_player_from_world_calls_tile_remove_object_test() ->
+  meck:new( tile ),
+  meck:expect( tile, remove_object, 2, ok),
+  State = #client_state{ x = x1, y = y1 },
+  client_handler:remove_player_from_world( State),
+
+  ?assert( meck:called( tile, remove_object, [{x1,y1}, #thing{ type = o_player }]) ),
+  meck:unload( tile ). 
+
 request_when_no_user_and_username_sent_should_set_username_test() ->
   meck:new( tile, [pass_through]),
   meck:expect( tile, sprites, 1, [{bank1, state1}] ),
@@ -14,7 +23,6 @@ request_when_no_user_and_username_sent_should_set_username_test() ->
   ?assert( meck:validate( tile ) ),
   ?assert( meck:called( tile, add_object, ['_', #thing{type = o_player}])),
   meck:unload(tile).
-
 
 request_when_no_user_should_send_need_login_test() ->
   State = #client_state{},

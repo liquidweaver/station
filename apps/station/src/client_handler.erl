@@ -3,7 +3,7 @@
 
 -export([request/3]).
 
--export([objects/1, object/2, view/3]). %debugging
+-export([objects/1, object/2, view/3, remove_player_from_world/1]). %debugging
 
 request( <<"username">>, Username, State = #client_state{ x = X, y = Y}) when 
   is_binary(Username) andalso byte_size(Username) > 0 ->
@@ -66,6 +66,9 @@ request( <<"move_intent">>, <<"up">>, State = #client_state{ y = Y} ) ->
 
 request( Unknown, Data, State) ->
   {  {[{unknown_request, {[{ Unknown, Data }]} }]}, State }.
+
+remove_player_from_world( State ) ->
+  tile:remove_object( {State#client_state.x, State#client_state.y}, #thing{ type = o_player } ).
 
 view(X,Y, ViewSize) when is_integer(ViewSize) andalso ViewSize rem 2 /= 0 ->
   Delta = (ViewSize - 1) div 2,
