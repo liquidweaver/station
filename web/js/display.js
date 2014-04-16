@@ -102,16 +102,21 @@ Display.prototype.update_framebuffer = function() {
   delta_y = (this.tile_height - 1) / 2;
   var player_pos = this.world_pos;
 
-  for ( x = player_pos.x - delta_x; x < player_pos.x + delta_x; x++ ) {
-    for ( y = player_pos.y - delta_y; y < player_pos.x + delta_y; y++ ) {
+  var x_min = player_pos.x - delta_x, y_min = player_pos.y - delta_y;
+      x_max = player_pos.x + delta_x, y_max = player_pos.y + delta_y;
+
+  for ( var x = x_min; x < x_max; x++ ) {
+    for ( var y = y_min; y < y_max; y++ ) {
+
       var tile = this.tile_data[ x + ',' + y];
       if ( typeof tile != 'undefined' ) {
-        var abs_x = x - player_pos.x + delta_x,
-        abs_y = y - player_pos.y + delta_y;
-        for ( t = 0; t < tile.length; t ++ ) {
+        var abs_x = x - x_max, abs_y = y - y_max;
+        
+        for ( var t = 0; t < tile.length; t ++ ) {
           this.draw_sprite_fb( tile[t], abs_x, abs_y );
         }
       }
+      
     }
   }
 };
