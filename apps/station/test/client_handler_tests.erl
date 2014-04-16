@@ -15,13 +15,13 @@ remove_player_from_world_calls_tile_remove_object_test() ->
 request_when_no_user_and_username_sent_should_set_username_test() ->
   meck:new( tile, [pass_through]),
   meck:expect( tile, sprites, 1, [{bank1, state1}] ),
-  meck:expect( tile, add_object, 2, ok), %%% WHY ISN'T THIS FAILING
+  meck:expect( tile, add_object, 2, ok),
   State = #client_state{},
   Expected = <<"bob">>,
   {_,#client_state{ username = Actual } } = client_handler:request(<<"username">>, Expected, State),
   ?assertEqual( Expected, Actual ),
   ?assert( meck:validate( tile ) ),
-  ?assert( meck:called( tile, add_object, ['_', #thing{type = o_player}])),
+  ?assert( meck:called( tile, add_object, ['_', #thing{type = o_player, state=#player_data{ username = Expected}}])),
   meck:unload(tile).
 
 request_when_no_user_should_send_need_login_test() ->

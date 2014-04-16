@@ -11,37 +11,35 @@
 
 -define(SERVER, ?MODULE).
 
-sprites({X,Y}) ->
-  case coords_to_pid({X,Y}) of
+sprites(Coords) ->
+  case coords_to_pid(Coords) of
     undefined -> [{ space, 0 }];
     Pid       -> gen_server:call( Pid, sprites )
   end.
 
-add_object( {X,Y}, Object ) when is_record( Object, thing ) ->
-  case coords_to_pid({X,Y}) of
+add_object( Coords, Object ) when is_record( Object, thing ) ->
+  case coords_to_pid(Coords) of
     undefined -> {error, no_tile};
     Pid       -> gen_server:cast( Pid, {add_object, Object} )
   end.
 
-
-move_object( From = {FX,FY}, To = {TX,TY}, Object = #thing{} ) ->
+move_object( From, To, Object = #thing{} ) ->
   case coords_to_pid(From) of
     undefined -> {error, no_tile};
     Pid       -> gen_server:call( Pid, {move_object, Object, To} )
   end.
 
-accept_object( Coords = {X,Y}, Object ) when is_record( Object, thing) ->
+accept_object( Coords, Object ) when is_record( Object, thing) ->
   case coords_to_pid(Coords) of
     undefined -> {error, no_tile};
     Pid       -> gen_server:call( Pid, {accept_object, Object} )
   end.
 
-remove_object( Coords = {X,Y}, Object ) when is_record( Object, thing) ->
+remove_object( Coords, Object ) when is_record( Object, thing) ->
   case coords_to_pid(Coords) of
     undefined -> {error, no_tile};
     Pid       -> gen_server:call( Pid, {remove_object, Object} )
   end.
-
 
 start_link(Args = {X,Y}) ->
   gen_server:start_link({local, coords_to_atom({X,Y})}, ?MODULE, Args, []);

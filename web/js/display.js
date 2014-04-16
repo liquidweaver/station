@@ -1,13 +1,13 @@
 /*jshint loopfunc: true */
 function Display(canvas, tiles_wide, tiles_high) {
   this.canvas = canvas;
-  this.tile_width = tiles_wide;
-  this.tile_height = tiles_high;
+  this.tiles_wide = tiles_wide;
+  this.tiles_tall = tiles_high;
 
   this.frameBuffer = document.createElement("canvas");
   this.frameBufferCtx = this.frameBuffer.getContext("2d");
-  this.frameBuffer.width = 32 * this.tile_width;
-  this.frameBuffer.height = 32 * this.tile_height;
+  this.frameBuffer.width = this.tile_width * this.tiles_wide;
+  this.frameBuffer.height = this.tile_height * this.tiles_tall;
 
   this.loadAssets( sources, function(_this) {
 
@@ -17,8 +17,10 @@ function Display(canvas, tiles_wide, tiles_high) {
 Display.prototype.canvas = undefined;
 Display.prototype.image_banks = {};
 Display.prototype.clock = 0;
-Display.prototype.tile_width = 0;
-Display.prototype.tile_height = 0;
+Display.prototype.tiles_wide = 0;
+Display.prototype.tiles_tall = 0;
+Display.prototype.tile_width = 32;
+Display.prototype.tile_height = 32;
 Display.prototype.tile_data = {};
 Display.prototype.world_pos = {x:0, y:0};
 Display.prototype.frameBuffer = undefined;
@@ -98,25 +100,23 @@ Display.prototype.draw_sprite = function( sprite, x, y, dest_ctx ) {
 };
 
 Display.prototype.update_framebuffer = function() {
-  var delta_x = (this.tile_width - 1) / 2,
-  delta_y = (this.tile_height - 1) / 2;
+  var delta_x = (this.tiles_wide - 1) / 2,
+      delta_y = (this.tiles_tall - 1) / 2;
   var player_pos = this.world_pos;
 
-  var x_min = player_pos.x - delta_x, y_min = player_pos.y - delta_y;
+  var x_min = player_pos.x - delta_x, y_min = player_pos.y - delta_y,
       x_max = player_pos.x + delta_x, y_max = player_pos.y + delta_y;
 
-  for ( var x = x_min; x < x_max; x++ ) {
-    for ( var y = y_min; y < y_max; y++ ) {
+  for ( var x = x_min, abs_x = 0; x < x_max; x++, abs_x++ ) {
+    for ( var y = y_min, abs_y = 0; y < y_max; y++, abs_y++ ) {
 
       var tile = this.tile_data[ x + ',' + y];
       if ( typeof tile != 'undefined' ) {
-        var abs_x = x - x_max, abs_y = y - y_max;
-        
         for ( var t = 0; t < tile.length; t ++ ) {
           this.draw_sprite_fb( tile[t], abs_x, abs_y );
         }
       }
-      
+
     }
   }
 };

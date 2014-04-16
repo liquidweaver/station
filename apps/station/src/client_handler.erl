@@ -93,8 +93,8 @@ objects( Objects ) when is_list(Objects) ->
 object( Key, Value ) ->
   {[{ Key, Value }]}.
 
-login( Username, State = #client_state{ x = X, y = Y} ) ->
-  tile:add_object( {X,Y}, #thing{ type = o_player }),
+login( Username, State = #client_state{ x = X, y = Y } ) ->
+  tile:add_object( {X,Y}, #thing{ type = o_player, state = #player_data{ username = Username } }),
   State#client_state{ username = Username }.
 
 world_pos_and_tiles( State ) ->
