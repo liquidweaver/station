@@ -40,17 +40,15 @@
         event.preventDefault();
       });
       $(document).keydown(function(e) {
-        console.log(e.keyCode);
-        switch(e.keyCode) {
-          case 37:
-            $.globals.Protocol.send_message( "move_intent", "left"); break;
-          case 38:
-            $.globals.Protocol.send_message( "move_intent", "up"); break;
-          case 39:
-            $.globals.Protocol.send_message( "move_intent", "right"); break;
-          case 40:
-            $.globals.Protocol.send_message( "move_intent", "down"); break;
+        var key = e.keyCode;
+        var keyMap = { 37: "left", 38: "up", 39: "right", 40: "down" };
+        if ( key in keyMap ) {
+          $.globals.Protocol.send_message( "move_intent", keyMap[key] );
+          e.preventDefault();
+          return false;
         }
+        else
+          return true;
       });
     });
   </script>
