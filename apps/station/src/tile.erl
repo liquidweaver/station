@@ -61,9 +61,9 @@ handle_call(sprites, _From, State=#tile_state{ contents = Contents }) ->
   Sprites =  [Type:sprite() || #thing{ type = Type } <- Contents ],
   {reply, Sprites, State };
 
-handle_call( {move_object, Object, To = {TX,TY} }, _From, State = #tile_state{ contents = Contents } ) ->
+handle_call( {move_object, Object, To}, _From, State = #tile_state{ contents = Contents } ) ->
   % XXX check of object in contents
-  Result = case tile:accept_object( To, Object ) of
+  case tile:accept_object( To, Object ) of
     ok              -> {reply, ok, State#tile_state{ contents = Contents -- [Object] } };
     {error, Reason} -> {reply, {error, Reason}, State }
   end;

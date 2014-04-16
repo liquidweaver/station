@@ -31,7 +31,7 @@ request( <<"move_intent">>, <<"right">>, State = #client_state{ x = X } ) ->
   State1 = State#client_state{ x = X + 1 },
     case tile:move_object(  {State#client_state.x, State#client_state.y},
                             {State1#client_state.x, State1#client_state.y},
-                            #thing{ type = o_player } ) of
+                            State#client_state.player_object ) of
     ok          -> { world_pos_and_tiles(State1), State1 };
     {error, _}  -> { world_pos_and_tiles(State), State }
   end;
@@ -40,7 +40,7 @@ request( <<"move_intent">>, <<"left">>, State = #client_state{ x = X } ) ->
   State1 = State#client_state{ x = X - 1 },
     case tile:move_object(  {State#client_state.x, State#client_state.y},
                             {State1#client_state.x, State1#client_state.y},
-                            #thing{ type = o_player } ) of
+                            State#client_state.player_object ) of
     ok          -> { world_pos_and_tiles(State1), State1 };
     {error, _}  -> { world_pos_and_tiles(State), State }
   end;
@@ -49,7 +49,7 @@ request( <<"move_intent">>, <<"down">>, State = #client_state{ y = Y} ) ->
   State1 = State#client_state{ y = Y + 1 },
     case tile:move_object(  {State#client_state.x, State#client_state.y},
                             {State1#client_state.x, State1#client_state.y},
-                            #thing{ type = o_player } ) of
+                            State#client_state.player_object ) of
     ok          -> { world_pos_and_tiles(State1), State1 };
     {error, _}  -> { world_pos_and_tiles(State), State }
   end;
@@ -58,7 +58,7 @@ request( <<"move_intent">>, <<"up">>, State = #client_state{ y = Y} ) ->
   State1 = State#client_state{ y = Y - 1 },
   case tile:move_object(  {State#client_state.x, State#client_state.y},
                           {State1#client_state.x, State1#client_state.y},
-                          #thing{ type = o_player } ) of
+                          State#client_state.player_object ) of
     ok          -> { world_pos_and_tiles(State1), State1 };
     {error, _}  -> { world_pos_and_tiles(State), State }
   end;
@@ -68,7 +68,7 @@ request( Unknown, Data, State) ->
   {  {[{unknown_request, {[{ Unknown, Data }]} }]}, State }.
 
 remove_player_from_world( State ) ->
-  tile:remove_object( {State#client_state.x, State#client_state.y}, #thing{ type = o_player } ).
+  tile:remove_object( {State#client_state.x, State#client_state.y}, #thing{ type = o_player, state=#player_data{ username = State#client_state.username} } ).
 
 view(X,Y, ViewSize) when is_integer(ViewSize) andalso ViewSize rem 2 /= 0 ->
   Delta = (ViewSize - 1) div 2,
@@ -94,8 +94,9 @@ object( Key, Value ) ->
   {[{ Key, Value }]}.
 
 login( Username, State = #client_state{ x = X, y = Y } ) ->
-  tile:add_object( {X,Y}, #thing{ type = o_player, state = #player_data{ username = Username } }),
-  State#client_state{ username = Username }.
+  PlayerObject = #thing{ type = o_player, state = #player_data{ username = Username } }, 
+  tile:add_object( {X,Y}, PlayerObject ),
+  State#client_state{ username = Username, player_object =  PlayerObject}.
 
 world_pos_and_tiles( State ) ->
   WorldData = objects(view(State#client_state.x,State#client_state.y,15)),

@@ -1,5 +1,5 @@
 -record( tile, {x, y, contents = nothing} ).
--record( client_state, { x = 7, y = 7, tiles, username } ).
+-record( client_state, { x = 7, y = 7, tiles, username, player_object } ).
 -record( thing, { type = invalid, state = unset } ).
 -record( tile_state, { x, y, subscriber_set, contents = [#thing{type = o_floor}] } ).
 -record( player_data, { username }).

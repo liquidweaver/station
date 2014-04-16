@@ -9,7 +9,7 @@ remove_player_from_world_calls_tile_remove_object_test() ->
   State = #client_state{ x = x1, y = y1 },
   client_handler:remove_player_from_world( State),
 
-  ?assert( meck:called( tile, remove_object, [{x1,y1}, #thing{ type = o_player }]) ),
+  ?assert( meck:called( tile, remove_object, [{x1,y1}, #thing{ type = o_player, state=#player_data{ username = State#client_state.username} }]) ),
   meck:unload( tile ). 
 
 request_when_no_user_and_username_sent_should_set_username_test() ->
@@ -18,7 +18,10 @@ request_when_no_user_and_username_sent_should_set_username_test() ->
   meck:expect( tile, add_object, 2, ok),
   State = #client_state{},
   Expected = <<"bob">>,
-  {_,#client_state{ username = Actual } } = client_handler:request(<<"username">>, Expected, State),
+  {_,#client_state{ username = Actual, 
+                    player_object = #thing{ state = #player_data{ username = Actual } }
+                  } 
+  } = client_handler:request(<<"username">>, Expected, State),
   ?assertEqual( Expected, Actual ),
   ?assert( meck:validate( tile ) ),
   ?assert( meck:called( tile, add_object, ['_', #thing{type = o_player, state=#player_data{ username = Expected}}])),
