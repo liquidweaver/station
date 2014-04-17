@@ -83,8 +83,8 @@ view(X,Y, ViewSize) when is_integer(ViewSize) andalso ViewSize rem 2 /= 0 ->
 
 add_keys_to_sprites( Sprites ) ->
   [ case SpriteData of
-      {Bank, State} -> objects([{ bank , Bank }, { state, State }]);
-      {Bank, State, Start} -> objects([{ bank , Bank }, { state, State }, {start, Start}])
+      {Id, Bank, State} -> objects([{ object_id, Id }, { bank , Bank }, { state, State }]);
+      {Id, Bank, State, Start} -> objects([{ object_id, Id}, { bank , Bank }, { state, State }, {start, Start}])
     end || SpriteData <- Sprites ].
 
 objects( Objects ) when is_list(Objects) ->

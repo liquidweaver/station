@@ -13,7 +13,7 @@
 
 sprites(Coords) ->
   case coords_to_pid(Coords) of
-    undefined -> [{ space, 0 }];
+    undefined -> [{ o_space, space, 0 }];
     Pid       -> gen_server:call( Pid, sprites )
   end.
 

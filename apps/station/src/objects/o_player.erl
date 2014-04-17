@@ -3,4 +3,4 @@
 -export([sprite/0]).
 
 sprite() ->
-  { human, ghost }.
+  { ?MODULE, human, ghost }.

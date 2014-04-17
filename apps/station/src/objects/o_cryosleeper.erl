@@ -3,4 +3,4 @@
 -export([sprite/0]).
 
 sprite() ->
-  { cryogenic2, sleeper_1, 0}.
+  { ?MODULE, cryogenic2, sleeper_1, 0}.

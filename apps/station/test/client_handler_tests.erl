@@ -14,12 +14,12 @@ remove_player_from_world_calls_tile_remove_object_test() ->
 
 request_when_no_user_and_username_sent_should_set_username_test() ->
   meck:new( tile, [pass_through]),
-  meck:expect( tile, sprites, 1, [{bank1, state1}] ),
+  meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
   meck:expect( tile, add_object, 2, ok),
   State = #client_state{},
   Expected = <<"bob">>,
   {_,#client_state{ username = Actual, 
-                    player_object = #thing{ state = #player_data{ username = Actual } }
+                    player_object = #thing{ type = o_player, state = #player_data{ username = Actual } }
                   } 
   } = client_handler:request(<<"username">>, Expected, State),
   ?assertEqual( Expected, Actual ),
@@ -41,7 +41,7 @@ request_when_username_empty_should_send_error_test() ->
 
 request_when_send_tiles_should_delegate_call_to_tiles_sprites_test() ->
   meck:new( tile ),
-  meck:expect( tile, sprites, 1, [{bank1, state1}] ),
+  meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
   State = #client_state{ x = 7, y = 7, username = ignored },
   client_handler:request(<<"send_tiles">>, <<>>, State),
   ?assert( meck:validate( tile ) ),
@@ -57,7 +57,7 @@ request_move_intent_test_() ->
   end,
   [{"right_increments_client_state_x",
     fun() ->
-      meck:expect( tile, sprites, 1, [{bank1, state1}] ),
+      meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
       meck:expect( tile, move_object, 3, ok ),
       State = #client_state{ x=7, y=7, username=ignore },
       Actual = client_handler:request( <<"move_intent">>, <<"right">>, State ),
@@ -66,7 +66,7 @@ request_move_intent_test_() ->
 
   {"left_decrements_client_state_x",
   fun() ->
-    meck:expect( tile, sprites, 1, [{bank1, state1}] ),
+    meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
     meck:expect( tile, move_object, 3, ok ),
     State = #client_state{ x=7, y=7, username=ignore },
     Actual = client_handler:request( <<"move_intent">>, <<"left">>, State ),
@@ -75,7 +75,7 @@ request_move_intent_test_() ->
 
   {"down_increments_client_state_y",
   fun() ->
-    meck:expect( tile, sprites, 1, [{bank1, state1}] ),
+    meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
     meck:expect( tile, move_object, 3, ok ),
     State = #client_state{ x=7, y=7, username=ignore },
     Actual = client_handler:request( <<"move_intent">>, <<"down">>, State ),
@@ -84,7 +84,7 @@ request_move_intent_test_() ->
 
   {"up_decrements_client_state_y",
   fun() ->
-    meck:expect( tile, sprites, 1, [{bank1, state1}] ),
+    meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
     meck:expect( tile, move_object, 3, ok ),
     State = #client_state{ x=7, y=7, username=ignore },
     Actual = client_handler:request( <<"move_intent">>, <<"up">>, State ),
@@ -93,7 +93,7 @@ request_move_intent_test_() ->
 
   {"no_movement_when_tile_transfer_of_player_fails",
   fun() ->
-    meck:expect( tile, sprites, 1, [{bank1, state1}] ),
+    meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
     meck:expect( tile, move_object, 3, {error, blocked} ),
 
     State = #client_state{ x=7, y=7, username=ignore },

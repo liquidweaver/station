@@ -3,4 +3,4 @@
 -export([sprite/0]).
 
 sprite() ->
-  { floors, floor }.
+  { ?MODULE, floors, floor }.
