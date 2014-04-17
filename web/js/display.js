@@ -5,6 +5,10 @@ function Display(canvas, log, tiles_wide, tiles_high) {
   this.tiles_wide = tiles_wide;
   this.tiles_tall = tiles_high;
 
+  this.hit_canvas = document.createElement("canvas");
+  this.hit_ctx = this.hit_canvas.getContext("2d");
+  this.hit_canvas.width = 1; this.hit_canvas.height = 1;
+
   this.frameBuffer = document.createElement("canvas");
   this.frameBufferCtx = this.frameBuffer.getContext("2d");
   this.frameBuffer.width = this.tile_width * this.tiles_wide;
@@ -27,6 +31,8 @@ Display.prototype.world_pos = {x:0, y:0};
 Display.prototype.frameBuffer = undefined;
 Display.prototype.frameBufferCtx = undefined;
 Display.prototype.mainCtx = undefined;
+Display.prototype.hit_canvas = undefined;
+Display.prototype.hit_ctx = undefined;
 Display.prototype.log = undefined;
 
 Display.prototype.draw_sprite_fb = function( sprite, x, y ) {
@@ -45,6 +51,58 @@ Display.prototype.tick = function() {
 Display.prototype.redraw = function() {
   this.update_framebuffer();
   this.update_canvas();
+};
+
+Display.prototype.hit_detect = function(mouse_evt) {
+  var rect = this.canvas.getBoundingClientRect();
+  var rel_x = mouse_evt.clientX - Math.ceil(rect.left),
+      rel_y = mouse_evt.clientY - Math.ceil(rect.top);
+  var tile_x = Math.floor( rel_x / this.tile_width ) + this.world_pos.x - (this.tiles_wide - 1) / 2,
+      tile_y = Math.floor( rel_y / this.tile_height) + this.world_pos.y - (this.tiles_tall - 1) / 2;
+
+  var tile_pxl_x = rel_x % this.tile_width,
+      tile_pxl_y = rel_y % this.tile_height;
+
+  // var actual_color = this.mainCtx.getImageData( rel_x, rel_y, 1, 1).data;
+  var sprites_hit = [];
+  for ( var z_index = 0; z_index < this.tile_data[tile_x + ',' +tile_y].length; z_index++ ) {
+    var sprite = this.tile_data[tile_x + ',' + tile_y][z_index];
+    var image_bank = this.image_banks[sprite.bank];
+    var width = image_bank.meta.width,
+        height = image_bank.meta.height;
+
+
+    var framesWide = image_bank.width / width;
+    var state_meta = image_bank.meta.states[sprite.state];
+    var frameOffset = state_meta.frameOffset;
+    var direction = Number(sprite.direction || 1);
+    if ( state_meta.clock_frames && 'undefined' != typeof sprite.start ) {
+      var animOffset = state_meta.clock_frames[ (this.clock - sprite.start) % state_meta.clock_frames.length ];
+      frameOffset += animOffset * state_meta.dirs;
+    }
+    frameOffset += direction - 1;
+    var sx = (frameOffset % framesWide) * width,
+        sy = Math.floor(frameOffset / framesWide) * height;
+
+    this.hit_ctx.clearRect(0,0,1,1);
+    this.hit_ctx.drawImage( image_bank, sx + tile_pxl_x, sy + tile_pxl_y, 1, 1, 0, 0, 1, 1 );
+    var sprite_color_test = this.hit_ctx.getImageData( 0, 0, 1, 1).data;
+    if ( sprite_color_test[3] > 0 ) { //visible
+      sprites_hit.push( [sprite.object_id, sprite_color_test]);
+    }
+  }
+  if ( sprites_hit.length > 0 ) {
+    var sprite_hit = sprites_hit.pop();
+
+    // if (sprite_hit[1].equals( actual_color ) ) {
+      return { tile_x: tile_x, tile_y: tile_y, object_id: sprite_hit[0] };
+    // }
+    // else
+    //   console.log( "Display.hit_detect: color mismatch");
+  }
+  else
+    console.log( "Display.hit_detect: nothing was clicked?");
+  
 };
 
 Display.prototype.loadAssets = function(sources, callback) {
