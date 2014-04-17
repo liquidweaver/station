@@ -1,6 +1,7 @@
 /*jshint loopfunc: true */
-function Display(canvas, tiles_wide, tiles_high) {
+function Display(canvas, log, tiles_wide, tiles_high) {
   this.canvas = canvas;
+  this.log = log;
   this.tiles_wide = tiles_wide;
   this.tiles_tall = tiles_high;
 
@@ -26,6 +27,7 @@ Display.prototype.world_pos = {x:0, y:0};
 Display.prototype.frameBuffer = undefined;
 Display.prototype.frameBufferCtx = undefined;
 Display.prototype.mainCtx = undefined;
+Display.prototype.log = undefined;
 
 Display.prototype.draw_sprite_fb = function( sprite, x, y ) {
   this.draw_sprite( sprite, x, y, this.frameBufferCtx );

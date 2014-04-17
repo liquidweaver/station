@@ -1,11 +1,12 @@
-function Protocol( display ) {
+function Protocol( display, log ) {
+  this.log = log;
   this.display = display;
 }
 
 Protocol.prototype.display = {};
-
 Protocol.prototype.server_socket = null;
 Protocol.prototype.url = "ws://localhost:9001/";
+Protocol.prototype.log = undefined;
 
 Protocol.prototype.handler_need_login  = function( login_request ) {
   var username = document.getElementById("username").value;

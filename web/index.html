@@ -16,15 +16,18 @@
     }
   </style>
   <script src="assets.js"></script>
+  <script src="js/log.js"></script>
   <script src="js/display.js"></script>
   <script src="js/protocol.js"></script>
   <script defer>
     $(document).ready( function() {
-      var display = new Display( $('#main_canvas')[0], 15, 15);
-      var protocol = new Protocol( display );
+      var log = new Log( $('#log')[0] );
+      var display = new Display( $('#main_canvas')[0], log, 15, 15);
+      var protocol = new Protocol( display, log );
       $.globals = {
         Display : display,
         Protocol : protocol,
+        Log : log,
       };
 
       $( "#connect_btn" )
