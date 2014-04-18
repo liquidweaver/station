@@ -64,22 +64,22 @@ Display.prototype.hit_detect = function(mouse_evt) {
   tileCoords = this.CanvasCoordsToTileCoords( canvas_x, canvas_y );
 
   var sprites_hit = [];
-  var tileData = this.tile_data[tileCoords.x + ',' + tileCoords.y];
-  for ( var z_index = 0; z_index < tileData.length; z_index++ ) {
-    var sprite = tileData[z_index];
+  var sprites = this.GetSpritesForTile( tileCoords.x, tileCoords.y );
+  for ( var z_index = 0; z_index < sprites.length; z_index++ ) {
+    var sprite = sprites[z_index];
     var image_bank = this.image_banks[sprite.bank];
     var spriteDetails = this.GetSpriteImageBankDetails(image_bank, sprite );
 
     this.hit_ctx.clearRect(0,0,1,1);
     this.hit_ctx.drawImage( image_bank, spriteDetails.x + tileCoords.pxl_x, spriteDetails.y + tileCoords.pxl_y, 1, 1, 0, 0, 1, 1 );
-    var sprite_color_test = this.hit_ctx.getImageData( 0, 0, 1, 1).data;
-    if ( sprite_color_test[3] > 0 ) { //visible
-      sprites_hit.push( [sprite.object_id, sprite_color_test]);
+    var test_pixel = this.hit_ctx.getImageData( 0, 0, 1, 1).data;
+    if ( test_pixel[3] > 0 ) { //visible
+      sprites_hit.push( sprite );
     }
   }
 
   if ( sprites_hit.length > 0 )
-    return { tile_x: tileCoords.x, tile_y: tileCoords.y, object_id: sprites_hit.pop()[0] };
+    return { tile_x: tileCoords.x, tile_y: tileCoords.y, object_id: sprites_hit.pop().object_id };
   else
     console.log( "Display.hit_detect: nothing was clicked?");
 
@@ -140,10 +140,10 @@ Display.prototype.update_framebuffer = function() {
   for ( var x = x_min, abs_x = 0; x < x_max; x++, abs_x++ ) {
     for ( var y = y_min, abs_y = 0; y < y_max; y++, abs_y++ ) {
 
-      var tile = this.tile_data[ x + ',' + y];
-      if ( typeof tile != 'undefined' ) {
-        for ( var t = 0; t < tile.length; t ++ ) {
-          this.draw_sprite_fb( tile[t], abs_x, abs_y );
+      var sprites = this.GetSpritesForTile(x,y);
+      if ( typeof sprites != 'undefined' ) {
+        for ( var t = 0; t < sprites.length; t ++ ) {
+          this.draw_sprite_fb( sprites[t], abs_x, abs_y );
         }
       }
 
@@ -228,4 +228,8 @@ Display.prototype.CanvasCoordsToTileCoords = function (canvas_x, canvas_y) {
                 y: Math.floor(canvas_y / this.tile_height) + this.world_pos.y - (this.tiles_tall - 1) / 2,
                 pxl_x: canvas_x % this.tile_width,
                 pxl_y: canvas_y % this.tile_height };
-  }
+  };
+
+Display.prototype.GetSpritesForTile = function(x, y) {
+  return this.tile_data[x + ',' + y];
+};
