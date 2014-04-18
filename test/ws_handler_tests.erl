@@ -2,7 +2,7 @@
 -include_lib("eunit/include/eunit.hrl").
 -include("records.hrl").
 
-init_should_immediatly_upgrade_to_a_websocket_test() ->
+init_should_immediately_upgrade_to_a_websocket_test() ->
   Expected = {upgrade, protocol, cowboy_websocket},
   ?assertEqual( Expected, ws_handler:init( {tcp, http}, ignored, ignored) ).
 
@@ -37,5 +37,5 @@ websocket_should_take_no_action_on_non_text_messages_test() ->
   ?assertEqual( Expected, Actual ).
 
 websocket_info_need_login_should_send_login_request_test() ->
-  Expected = {reply, {text, jiffy:encode( {[{ <<"need_login">>, <<"Please pass your username.">>}]} )}, req1, state1 },
+  Expected = {reply, {text, map_codec:encode(#{ need_login => <<"Please pass your username.">>})}, req1, state1 },
   ?assertEqual( Expected, ws_handler:websocket_info( need_login, req1, state1 )).
