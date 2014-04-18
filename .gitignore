@@ -6,4 +6,5 @@ web/sprites/*.meta
 deps
 rel/station
 .rebar
+.dialyzer_plt
 station.sublime-workspace
