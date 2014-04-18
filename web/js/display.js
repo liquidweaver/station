@@ -14,6 +14,8 @@ function Display(canvas, log, tiles_wide, tiles_high) {
   this.frameBuffer.width = this.tile_width * this.tiles_wide;
   this.frameBuffer.height = this.tile_height * this.tiles_tall;
 
+
+
   this.loadAssets( sources, function(_this) {
 
   });
@@ -63,29 +65,15 @@ Display.prototype.hit_detect = function(mouse_evt) {
   var tile_pxl_x = rel_x % this.tile_width,
       tile_pxl_y = rel_y % this.tile_height;
 
-  // var actual_color = this.mainCtx.getImageData( rel_x, rel_y, 1, 1).data;
   var sprites_hit = [];
-  for ( var z_index = 0; z_index < this.tile_data[tile_x + ',' +tile_y].length; z_index++ ) {
-    var sprite = this.tile_data[tile_x + ',' + tile_y][z_index];
+  var tileData = this.tile_data[tile_x + ',' + tile_y];
+  for ( var z_index = 0; z_index < tileData.length; z_index++ ) {
+    var sprite = tileData[z_index];
     var image_bank = this.image_banks[sprite.bank];
-    var width = image_bank.meta.width,
-        height = image_bank.meta.height;
-
-
-    var framesWide = image_bank.width / width;
-    var state_meta = image_bank.meta.states[sprite.state];
-    var frameOffset = state_meta.frameOffset;
-    var direction = Number(sprite.direction || 1);
-    if ( state_meta.clock_frames && 'undefined' != typeof sprite.start ) {
-      var animOffset = state_meta.clock_frames[ (this.clock - sprite.start) % state_meta.clock_frames.length ];
-      frameOffset += animOffset * state_meta.dirs;
-    }
-    frameOffset += direction - 1;
-    var sx = (frameOffset % framesWide) * width,
-        sy = Math.floor(frameOffset / framesWide) * height;
+    var spriteDetails = this.GetSpriteImageBankDetails(image_bank, sprite );
 
     this.hit_ctx.clearRect(0,0,1,1);
-    this.hit_ctx.drawImage( image_bank, sx + tile_pxl_x, sy + tile_pxl_y, 1, 1, 0, 0, 1, 1 );
+    this.hit_ctx.drawImage( image_bank, spriteDetails.x + tile_pxl_x, spriteDetails.y + tile_pxl_y, 1, 1, 0, 0, 1, 1 );
     var sprite_color_test = this.hit_ctx.getImageData( 0, 0, 1, 1).data;
     if ( sprite_color_test[3] > 0 ) { //visible
       sprites_hit.push( [sprite.object_id, sprite_color_test]);
@@ -102,7 +90,7 @@ Display.prototype.hit_detect = function(mouse_evt) {
   }
   else
     console.log( "Display.hit_detect: nothing was clicked?");
-  
+
 };
 
 Display.prototype.loadAssets = function(sources, callback) {
@@ -139,24 +127,14 @@ Display.prototype.loadAssets = function(sources, callback) {
 
 Display.prototype.draw_sprite = function( sprite, x, y, dest_ctx ) {
   var image_bank = this.image_banks[sprite.bank];
-  var width = image_bank.meta.width,
-  height = image_bank.meta.height;
 
+  var spriteDetails = this.GetSpriteImageBankDetails(image_bank, sprite );
+  var frameBufferCoords = { x: x * 32, y: y * 32};
 
-  var framesWide = image_bank.width / width;
-  var state_meta = image_bank.meta.states[sprite.state];
-  var frameOffset = state_meta.frameOffset;
-  var direction = Number(sprite.direction || 1);
-  if ( state_meta.clock_frames && 'undefined' != typeof sprite.start ) {
-    var animOffset = state_meta.clock_frames[ (this.clock - sprite.start) % state_meta.clock_frames.length ];
-    frameOffset += animOffset * state_meta.dirs;
-  }
-  frameOffset += direction - 1;
-  var sx = (frameOffset % framesWide) * width,
-  sy = Math.floor(frameOffset / framesWide) * height;
-  var px = x * 32, py = y * 32;
-
-  dest_ctx.drawImage( image_bank, sx, sy, width, height, px, py, width, height );
+  dest_ctx.drawImage( image_bank, spriteDetails.x, spriteDetails.y,
+                      spriteDetails.width, spriteDetails.height,
+                      frameBufferCoords.x, frameBufferCoords.y,
+                      spriteDetails.width, spriteDetails.height );
 };
 
 Display.prototype.update_framebuffer = function() {
@@ -233,3 +211,22 @@ Display.prototype.parse_raw_dmi_meta = function( raw_dmi_meta ) {
   meta.states = states;
   return meta;
 };
+
+// INTERNAL
+
+Display.prototype.GetSpriteImageBankDetails = function ( image_bank, sprite ) {
+        var width = image_bank.meta.width,
+            height = image_bank.meta.height;
+        var framesWide = image_bank.width / width;
+        var state_meta = image_bank.meta.states[sprite.state];
+        var frameOffset = state_meta.frameOffset;
+        var direction = Number(sprite.direction || 1);
+        if (state_meta.clock_frames && "undefined" != typeof sprite.start) {
+            var animOffset = state_meta.clock_frames[(this.clock - sprite.start) % state_meta.clock_frames.length];
+            frameOffset += animOffset * state_meta.dirs;
+        }
+        frameOffset += direction - 1;
+        var sx = frameOffset % framesWide * width,
+            sy = Math.floor(frameOffset / framesWide) * height;
+        return { x: sx, y: sy, width: width, height: height};
+    };
