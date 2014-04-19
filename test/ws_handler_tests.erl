@@ -7,7 +7,7 @@ init_should_immediately_upgrade_to_a_websocket_test() ->
   ?assertEqual( Expected, ws_handler:init( {tcp, http}, ignored, ignored) ).
 
 websocket_init_returns_new_client_state_state_test() ->
-  Expected = {ok, req1, #client_state{} },
+  Expected = {ok, req1, #{ username => undefined } },
   ?assertEqual( Expected, ws_handler:websocket_init( transport1, req1, opts1 ) ).
 
 websocket_terminate_should_call_client_handler_remove_player_and_return_result_test() ->

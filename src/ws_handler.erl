@@ -13,7 +13,7 @@ init({tcp, http}, _Req, _Opts) ->
 
 websocket_init(_TransportName, Req, _Opts) ->
   timer:send_after( 0, need_login ),
-  {ok, Req, #client_state{} }.
+  {ok, Req, #{ username => undefined } }.
 
 websocket_handle({text, Msg}, Req, State) ->
   {ReplyData, State1} = try jiffy:decode(Msg) of

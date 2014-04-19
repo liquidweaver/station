@@ -17,7 +17,7 @@ sprites(Coords) ->
     Pid       -> gen_server:call( Pid, sprites )
   end.
 
-add_object( Coords, Object ) when is_record( Object, thing ) ->
+add_object( Coords, Object )  ->
   case coords_to_pid(Coords) of
     undefined -> {error, no_tile};
     Pid       -> gen_server:cast( Pid, {add_object, Object} )
@@ -29,13 +29,13 @@ move_object( From, To, Object = #thing{} ) ->
     Pid       -> gen_server:call( Pid, {move_object, Object, To} )
   end.
 
-accept_object( Coords, Object ) when is_record( Object, thing) ->
+accept_object( Coords, Object ) ->
   case coords_to_pid(Coords) of
     undefined -> {error, no_tile};
     Pid       -> gen_server:call( Pid, {accept_object, Object} )
   end.
 
-remove_object( Coords, Object ) when is_record( Object, thing) ->
+remove_object( Coords, Object ) ->
   case coords_to_pid(Coords) of
     undefined -> {error, no_tile};
     Pid       -> gen_server:call( Pid, {remove_object, Object} )
