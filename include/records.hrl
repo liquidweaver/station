@@ -1,4 +1,3 @@
 -record( tile, {x, y, contents = nothing} ).
 -record( thing, { type = invalid, state = unset } ).
--record( tile_state, { x, y, subscriber_set, contents = [#thing{type = o_floor}] } ).
 -record( player_data, { username }).

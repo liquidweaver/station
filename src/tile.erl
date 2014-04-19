@@ -49,37 +49,38 @@ start_link(Args = {X,Y, _Contents}) ->
 
 %% @private
 init({X,Y, Contents} ) ->
-  {ok, #tile_state{ x = X, y = Y, contents = Contents }};
+  {ok, #{ x => X, y => Y, contents => Contents }};
 
 init({X,Y}) ->
-  {ok, #tile_state{ x = X, y =Y }}.
+  {ok, #{ x => X, y => Y, contents => empty }}.
 
-handle_call(get_contents, _From, State=#tile_state{ contents = Contents }) ->
+handle_call(get_contents, _From, State=#{ contents := Contents }) ->
   {reply, Contents, State };
 
-handle_call(sprites, _From, State=#tile_state{ contents = Contents }) ->
+handle_call(sprites, _From, State = #{ contents := Contents }) ->
   Sprites =  [Type:sprite() || #thing{ type = Type } <- Contents ],
   {reply, Sprites, State };
 
-handle_call( {move_object, Object, To}, _From, State = #tile_state{ contents = Contents } ) ->
+handle_call( {move_object, Object, To}, _From, State = #{ contents := Contents } ) ->
   % XXX check of object in contents
   case tile:accept_object( To, Object ) of
-    ok              -> {reply, ok, State#tile_state{ contents = Contents -- [Object] } };
+    ok              -> {reply, ok, State#{ contents => Contents -- [Object] } };
     {error, Reason} -> {reply, {error, Reason}, State }
   end;
 
-handle_call( {remove_object, Object }, _From, State = #tile_state{contents = Contents}) ->
-  {reply, ok, State#tile_state{ contents = Contents -- [Object] } };
+handle_call( {remove_object, Object}, _From, State = #{ contents := Contents } ) ->
+  {reply, ok, State#{ contents => Contents -- [Object] } };
 
-handle_call( {accept_object, Object}, _From, State = #tile_state{ contents = Contents } ) ->
-  {reply, ok, State#tile_state{ contents = Contents ++ [Object] } }; %%% XXX Stubbed
+handle_call( {accept_object, Object}, _From, State = #{ contents := Contents } ) ->
+  % STUBBED - shouldn't always accept
+  {reply, ok, State#{ contents => Contents ++ [Object] } };
 
 %% @private
 handle_call(_Request, _From, State) ->
   {reply, {error, unknown_call}, State}.
 
-handle_cast({add_object, Object}, State=#tile_state{ contents = Contents } ) ->
-  NewState = State#tile_state{ contents = Contents ++ [Object] },
+handle_cast({add_object, Object}, State=#{ contents := Contents } ) ->
+  NewState = State#{ contents => Contents ++ [Object] },
   {noreply, NewState};
 
 %% @private
