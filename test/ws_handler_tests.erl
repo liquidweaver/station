@@ -1,6 +1,5 @@
 -module(ws_handler_tests).
 -include_lib("eunit/include/eunit.hrl").
--include("records.hrl").
 
 init_should_immediately_upgrade_to_a_websocket_test() ->
   Expected = {upgrade, protocol, cowboy_websocket},

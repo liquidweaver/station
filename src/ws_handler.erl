@@ -1,6 +1,5 @@
 -module(ws_handler).
 -behaviour(cowboy_websocket_handler).
--include("records.hrl").
 
 -export([init/3]).
 -export([websocket_init/3]).

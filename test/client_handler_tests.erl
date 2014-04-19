@@ -1,8 +1,6 @@
 -module(client_handler_tests).
 -include_lib("eunit/include/eunit.hrl").
 
--include("records.hrl").
-
 remove_player_from_world_calls_tile_remove_object_test() ->
   meck:new( tile ),
   meck:expect( tile, remove_object, 2, ok),

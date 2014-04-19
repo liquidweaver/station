@@ -1,3 +1,0 @@
--record( tile, {x, y, contents = nothing} ).
--record( thing, { type = invalid, state = unset } ).
--record( player_data, { username }).

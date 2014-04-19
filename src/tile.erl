@@ -1,6 +1,5 @@
 -module(tile).
 -export([start_link/1]).
--include("records.hrl").
 
 -export([sprites/1, add_object/2, move_object/3, accept_object/2, remove_object/2]).
 
@@ -23,7 +22,7 @@ add_object( Coords, Object )  ->
     Pid       -> gen_server:cast( Pid, {add_object, Object} )
   end.
 
-move_object( From, To, Object = #thing{} ) ->
+move_object( From, To, Object ) ->
   case coords_to_pid(From) of
     undefined -> {error, no_tile};
     Pid       -> gen_server:call( Pid, {move_object, Object, To} )
@@ -58,7 +57,7 @@ handle_call(get_contents, _From, State=#{ contents := Contents }) ->
   {reply, Contents, State };
 
 handle_call(sprites, _From, State = #{ contents := Contents }) ->
-  Sprites =  [Type:sprite() || #thing{ type = Type } <- Contents ],
+  Sprites =  [Type:sprite() || #{ type := Type } <- Contents ],
   {reply, Sprites, State };
 
 handle_call( {move_object, Object, To}, _From, State = #{ contents := Contents } ) ->

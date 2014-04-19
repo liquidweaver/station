@@ -1,6 +1,5 @@
 -module(tile_tests).
 -include_lib("eunit/include/eunit.hrl").
--include("records.hrl").
 
 init_passed_contents_sets_contents_in_state_test() ->
   Actual = tile:init( {x,y,contents1} ),
