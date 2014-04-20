@@ -17,7 +17,7 @@ start_link() ->
 init([]) ->
   Tiles = [ case X =:= Y of
               true -> ?CHILD( {X,Y}, tile, worker, {X,Y,[#{type => o_floor}, #{type => o_cryosleeper}]} );
-              false -> ?CHILD( {X,Y}, tile, worker, {X,Y} )
+              false -> ?CHILD( {X,Y}, tile, worker, {X,Y,[#{type => o_floor}]} )
             end || X <- lists:seq(0,29), Y <- lists:seq(0,29) ],
   {ok, { {one_for_one, 5, 10}, Tiles} }.
 
