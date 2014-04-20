@@ -16,7 +16,7 @@ generate:
 start: compile generate
 	rel/station/bin/station console
 
-%.beam : %.erl
+%.beam : %.erl $(DEPSOLVER_PLT)
 	erlc +debug_info -o behaviors $<
 	dialyzer --add_to_plt --plt $(DEPSOLVER_PLT) -r behaviors
 
