@@ -2,7 +2,7 @@
 
 -export([request/3]).
 
--export([objects/1, object/2, view/3, remove_player_from_world/1]). %debugging
+-export([remove_player_from_world/1]).
 
 request( <<"username">>, Username, State) when
   is_binary(Username) andalso byte_size(Username) > 0 ->
@@ -20,20 +20,20 @@ request( <<"send_tiles">>, _, State) ->
   {world_pos_and_tiles(State) , State };
 
 request( <<"move_intent">>, <<"right">>, State = #{ x := X } ) ->
-  State1 = State#{ x => X + 1 },
-  move_player( State, State1 );
+  ProposedState = State#{ x => X + 1 },
+  move_player( State, ProposedState );
 
 request( <<"move_intent">>, <<"left">>, State = #{ x := X } ) ->
-  State1 = State#{ x => X - 1 },
-  move_player( State, State1 );
+  ProposedState = State#{ x => X - 1 },
+  move_player( State, ProposedState );
 
 request( <<"move_intent">>, <<"down">>, State = #{ y := Y} ) ->
-  State1 = State#{ y => Y + 1 },
-  move_player( State, State1 );
+  ProposedState = State#{ y => Y + 1 },
+  move_player( State, ProposedState );
 
 request( <<"move_intent">>, <<"up">>, State = #{ y := Y} ) ->
-  State1 = State#{ y => Y - 1 },
-  move_player( State, State1 );
+  ProposedState = State#{ y => Y - 1 },
+  move_player( State, ProposedState );
 
 request( Unknown, Data, State) ->
   { #{ unknown_request => [Unknown, Data] }, State }.
@@ -42,7 +42,7 @@ remove_player_from_world( #{ x := X, y := Y, player_object := PlayerObject } ) -
   tile:remove_object( {X, Y}, PlayerObject ).
 
 move_player( OldState = #{ x := OldX, y := OldY }, NewState = #{ x := NewX, y := NewY, player_object := PlayerObject } ) ->
-    case tile:move_object(  {OldX, OldY}, {NewX, NewY}, PlayerObject ) of
+    case tile:move_object( {OldX, OldY}, {NewX, NewY}, PlayerObject ) of
     ok          -> { world_pos_and_tiles(NewState), NewState };
     {error, _}  -> { world_pos_and_tiles(OldState), OldState }
     end.

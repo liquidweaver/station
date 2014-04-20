@@ -68,7 +68,10 @@
       });
       $("#main_canvas").click( function( e ) {
         var detected = $.globals.Display.hit_detect( e );
-        if (detected) {
+        if ( typeof detected.interface_id != 'undefined' ) {
+          $.globals.Log.log( "Interface clicked, id=" + detected.interface_id );
+        }
+        else {
           $.globals.Log.log( "Clicked on: " + detected.object_id + " at {" + detected.tile_x + ',' + detected.tile_y + '}' );
         }
         e.preventDefault();

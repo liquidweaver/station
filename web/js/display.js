@@ -14,7 +14,11 @@ function Display(canvas, log, tiles_wide, tiles_high, image_sources ) {
   this.frameBuffer.width = this.tile_width * this.tiles_wide;
   this.frameBuffer.height = this.tile_height * this.tiles_tall;
 
+  this.interfaceBuffer = document.createElement("canvas");
+  this.interfaceBuffer.width = this.frameBuffer.width;
+  this.interfaceBuffer.height = this.frameBuffer.height;
 
+  this.interfaceBufferCtx = this.interfaceBuffer.getContext("2d");
   this.loadAssets( image_sources );
 }
 
@@ -33,10 +37,7 @@ Display.prototype.mainCtx = undefined;
 Display.prototype.hit_canvas = undefined;
 Display.prototype.hit_ctx = undefined;
 Display.prototype.log = undefined;
-
-Display.prototype.draw_sprite_fb = function( sprite, x, y ) {
-  this.draw_sprite( sprite, x, y, this.frameBufferCtx );
-};
+Display.prototype.interface_elements = [];
 
 Display.prototype.update_canvas = function() {
   this.mainCtx.drawImage( this.frameBuffer, 0, 0 );
@@ -52,11 +53,91 @@ Display.prototype.redraw = function() {
   this.update_canvas();
 };
 
+Display.prototype.DELETEMESOON = function() {
+
+  //Draw interface
+  RightHandX = (this.frameBuffer.width / 2 ) - this.tile_width;
+  RightHandY = this.frameBuffer.height - this.tile_height - 5;
+  LeftHandX = (this.frameBuffer.width / 2 );
+  LeftHandY = this.frameBuffer.height - this.tile_height - 5;
+  RSwapX = RightHandX;
+  RSwapY = RightHandY - this.tile_height;
+  LSwapX = LeftHandX;
+  LSwapY = LeftHandY - this.tile_height;
+  Pocket1X = LeftHandX + this.tile_width + 5;
+  Pocket1Y = LeftHandY;
+  Pocket2X = Pocket1X + this.tile_width + 5;
+  Pocket2Y = LeftHandY;
+
+
+  var elements = [{sprite: { bank: "screen1_Midnight", state: "act_equip"}, x: RSwapX, y: RSwapY, id: 0 },
+                  {sprite: { bank: "screen1_Midnight", state: "hand1"}, x: RSwapX, y: RSwapY, id: 1 },
+                  {sprite: { bank: "screen1_Midnight", state: "hand2"}, x: LSwapX, y: LSwapY, id: 2 },
+                  {sprite: { bank: "screen1_Midnight", state: "hand_inactive", direction: 2 }, x: RightHandX, y: RightHandY, id: 3 },
+                  {sprite: { bank: "screen1_Midnight", state: "hand_inactive", direction: 1 }, x: LeftHandX, y: LeftHandY, id: 4},
+                  {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket1X, y: Pocket1Y, id: 5 },
+                  {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket2X, y: Pocket2Y, id: 6 }
+  ];
+
+  this.load_interface_elements( elements );
+};
+
+//interface_id must be 0 <= id <= 255
+Display.prototype.add_interface_element = function( sprite, id, x, y ) {
+
+  imageDetails = this.get_sprite_image_bank_details( sprite );
+  var elementCanvas = document.createElement("canvas");
+  var elemCtx = elementCanvas.getContext("2d");
+  elementCanvas.width = imageDetails.width;
+  elementCanvas.height = imageDetails.height;
+
+  this.draw_sprite( sprite, 0, 0, elemCtx);
+  var imageData = elemCtx.getImageData( 0, 0, elementCanvas.width, elementCanvas.height );
+  var pixelArray = imageData.data;
+  for ( var pxl = 0; pxl < pixelArray.length / 4; pxl++ ) {
+    var index = 4 * pxl;
+    if ( pixelArray[ index + 3 ] > 0 ) { //visible
+      pixelArray[index] = id;
+      pixelArray[index+3] = 255; //We don't want transparency messing with the id
+    }
+  }
+  var keyedElementCanvas = document.createElement("canvas");
+  // keyedElementCanvas.width = imageDetails.width;
+  // keyedElementCanvas.height = imageDetails.height;
+
+  var keyedCtx = keyedElementCanvas.getContext("2d");
+
+  //We cannot just putImageData on the interfaceCanvas -
+  //We need to respect the alpha values, and only drawImage does
+  //that. So, we need to create a new canvas and putImage to that
+  //so that we can immediatly use that as a source for drawImage
+  //because drawImage doesn't support a context as a source
+  keyedCtx.putImageData( imageData, 0, 0 );
+  this.interfaceBufferCtx.drawImage( keyedElementCanvas, x, y);
+ };
+
+Display.prototype.load_interface_elements = function( elements ) {
+  this.interfaceBufferCtx.clearRect(0,0, this.interfaceBuffer.width - 1, this.interfaceBuffer.height - 1);
+
+  for( var i = 0; i < elements.length; i ++ ) {
+    var element = elements[i];
+
+    this.add_interface_element( element.sprite, element.id, element.x, element.y );
+  }
+
+  this.interface_elements = elements;
+};
+
 Display.prototype.hit_detect = function(mouse_evt) {
   var rect = this.canvas.getBoundingClientRect();
   var canvas_x = mouse_evt.clientX - Math.ceil(rect.left),
       canvas_y = mouse_evt.clientY - Math.ceil(rect.top);
 
+  //TODO check interface canvas
+  var interfaceData = this.interfaceBufferCtx.getImageData( canvas_x, canvas_y, 1, 1).data;
+  if ( interfaceData[3] > 0 ) {
+    return { interface_id: interfaceData[0] };
+  }
 
   var tileCoords = this.canvas_coords_to_tile_coords( canvas_x, canvas_y );
 
@@ -97,6 +178,7 @@ Display.prototype.loadAssets = function(sources) {
       _this.mainCtx = _this.canvas.getContext("2d");
 
       console.log("Assets loaded.");
+      _this.DELETEMESOON();
       setInterval(function(){_this.tick();}, 250);
     }
   };
@@ -148,6 +230,13 @@ Display.prototype.update_framebuffer = function() {
 
     }
   }
+
+  for ( var i = 0; i < this.interface_elements.length; i++ ) {
+    var element = this.interface_elements[i];
+    this.draw_sprite( element.sprite, element.x, element.y, this.frameBufferCtx );
+  }
+
+
 };
 
 Display.prototype.clock_frame_map = function( delay_array ) {
