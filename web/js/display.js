@@ -1,5 +1,5 @@
 /*jshint loopfunc: true */
-function Display(canvas, log, tiles_wide, tiles_high) {
+function Display(canvas, log, tiles_wide, tiles_high, image_sources ) {
   this.canvas = canvas;
   this.log = log;
   this.tiles_wide = tiles_wide;
@@ -15,10 +15,7 @@ function Display(canvas, log, tiles_wide, tiles_high) {
   this.frameBuffer.height = this.tile_height * this.tiles_tall;
 
 
-
-  this.loadAssets( sources, function(_this) {
-
-  });
+  this.loadAssets( image_sources );
 }
 
 Display.prototype.canvas = undefined;
@@ -85,7 +82,7 @@ Display.prototype.hit_detect = function(mouse_evt) {
 
 };
 
-Display.prototype.loadAssets = function(sources, callback) {
+Display.prototype.loadAssets = function(sources) {
   var assetDir = 'sprites/';
   var imageExtension = '.dmi';
   var metaExtension = '.meta';
