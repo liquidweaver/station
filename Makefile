@@ -2,10 +2,10 @@ REBAR=`which rebar`
 BEHAVIORS := $(patsubst %.erl,%.beam,$(wildcard behaviors/*.erl))
 SPRITES := $(patsubst %.dmi,%.meta,$(wildcard web/sprites/*.dmi))
 DEPSOLVER_PLT=.dialyzer_plt
-all: deps compile $(SPRITES)
-deps:
-	@$(REBAR) get-deps
-compile: $(BEHAVIORS)
+all: compile $(SPRITES)
+update_deps:
+	@$(REBAR) update-deps
+compile: update_deps $(BEHAVIORS)
 	@$(REBAR) compile
 tests:
 	@$(REBAR) skip_deps=true eunit
