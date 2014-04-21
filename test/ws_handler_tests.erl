@@ -23,12 +23,15 @@ websocket_terminate_should_call_client_handler_remove_player_and_return_result_t
 websocket_handle_delegates_text_requests_to_client_handler_request_test() ->
   meck:new(client_handler),
   meck:expect( client_handler, request, 3, {replydata1, state1} ),
+  meck:new(map_codec),
+  meck:expect( map_codec, encode, 1, ignored ),
 
   ws_handler:websocket_handle({text, <<"{ \"type\":\"data\" }">>}, req1, state1 ),
 
   ?assert( meck:validate(client_handler)),
   ?assert( meck:called(client_handler, request, [<<"type">>, <<"data">>, state1] ) ),
-  meck:unload(client_handler).
+  meck:unload(client_handler),
+  meck:unload(map_codec).
 
 websocket_should_take_no_action_on_non_text_messages_test() ->
   Expected = {ok, req1, state1},

@@ -3,4 +3,4 @@
 -export([sprite/0]).
 
 sprite() ->
-  { ?MODULE, human, ghost }.
+  #{ type => ?MODULE, bank => human, state => ghost }.

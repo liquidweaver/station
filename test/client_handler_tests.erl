@@ -24,15 +24,26 @@ request_when_no_user_and_username_sent_should_set_username_test() ->
   ?assert( meck:called( tile, add_object, ['_', #{type => o_player, username => Expected}])),
   meck:unload(tile).
 
+request_when_new_login_should_send_tile_data_world_pos_test()->
+  meck:new( tile, [pass_through]),
+  meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
+  meck:expect( tile, add_object, 2, ok),
+  State = #{},
+  Expected = <<"bob">>,
+  {Actual, _ } = client_handler:request(<<"username">>, Expected, State),
+  ?assertMatch( #{tile_data := _, world_pos := _ }, Actual ),
+  meck:unload(tile).
+
+
 request_when_no_user_should_send_need_login_test() ->
   State = #{ username => undefined },
-  Expected = { {[{need_login, <<"Please pass your username.">>}]}, State },
+  Expected = { #{need_login => <<"Please pass your username.">>}, State },
   Actual = client_handler:request(<<"send_tiles">>, <<>>, State),
   ?assertEqual( Expected, Actual ).
 
 request_when_username_empty_should_send_error_test() ->
   State = #{},
-  Expected = { {[{error, <<"Invalid username.">>}]}, State },
+  Expected = { #{error => <<"Invalid username.">>}, State },
   Actual = client_handler:request(<<"username">>, <<>>, State),
   ?assertEqual( Expected, Actual ).
 

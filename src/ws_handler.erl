@@ -20,7 +20,7 @@ websocket_handle({text, Msg}, Req, State) ->
   catch
     { error, Code } -> { error, Code, State }
   end,
-  Reply = jiffy:encode(ReplyData),
+  Reply = map_codec:encode(ReplyData),
   {reply, {text, Reply}, Req, State1};
 
 websocket_handle(_Data, Req, State) ->
