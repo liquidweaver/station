@@ -4,10 +4,8 @@
 
 -export([remove_player_from_world/1]).
 
-request( <<"username">>, Username, State) when
-  is_binary(Username) andalso byte_size(Username) > 0 ->
-
-  LoggedInState = login(Username, State#{ x => 7, y => 7}),
+request( <<"username">>, Username, State) when is_binary(Username) andalso byte_size(Username) > 0 ->
+  LoggedInState = login_player( Username, State ),
   {world_pos_and_tiles(LoggedInState), LoggedInState };
 
 request( <<"username">>, _, State) ->
@@ -59,10 +57,13 @@ view(X,Y, ViewSize) when is_integer(ViewSize) andalso ViewSize rem 2 /= 0 ->
     || TileX <- lists:seq(StartX, EndX), TileY <- lists:seq(StartY,EndY) ],
   maps:from_list( Sprites ).
 
-login( Username, State = #{ x := X, y := Y } ) ->
-  PlayerObject = #{ type => o_player, username => Username  },
-  tile:add_object( {X,Y}, PlayerObject ),
-  State#{ username => Username, player_object => PlayerObject}.
+create_player_object( Username ) ->
+  #{ type => o_player, username => Username  }.
+
+login_player( Username, State ) ->
+  PlayerObject = create_player_object(Username),
+  tile:add_object( {7,7}, PlayerObject ),
+  State#{ username => Username, player_object => PlayerObject, x => 7, y => 7}.
 
 world_pos_and_tiles( #{ x := X, y := Y} ) ->
   WorldData = view(X,Y,15),
