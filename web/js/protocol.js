@@ -8,27 +8,30 @@ Protocol.prototype.server_socket = null;
 Protocol.prototype.url = "ws://localhost:9001/";
 Protocol.prototype.log = undefined;
 
-Protocol.prototype.handler_need_login  = function( login_request ) {
+Protocol.prototype.handler_need_login  = function( login_request, should_redraw  ) {
   var username = document.getElementById("username").value;
 
   this.send_message( 'username', username );
 };
 
-Protocol.prototype.handler_tile_data = function( tile_data ) {
+Protocol.prototype.handler_tile_data = function( tile_data, should_redraw  ) {
   for ( var coordinate in tile_data ) {
     this.display.tile_data[coordinate] = tile_data[coordinate];
   }
   console.log( 'tile_data recieved. ' + Object.keys(tile_data).length + ' tiles.');
+
+  should_redraw = true;
 };
 
-Protocol.prototype.handler_world_pos = function( position ) {
+Protocol.prototype.handler_world_pos = function( position, should_redraw ) {
   this.display.world_pos = position;
 
   console.log( 'world_pos updated: ' + position.x + ',' + position.y);
-  this.display.redraw();
+
+  should_redraw = true;
 };
 
-Protocol.prototype.handler_error = function( error_msg ) {
+Protocol.prototype.handler_error = function( error_msg, should_redraw  ) {
   alert( error_msg );
 };
 
@@ -54,13 +57,17 @@ Protocol.prototype.connect_websocket = function( url ) {
   var _this = this; //For callback below
   this.server_socket.onmessage = function(e){
     var server_message = e.data;
+    var should_redraw = false;
     msg = JSON.parse( e.data );
 
     for (var msg_type in msg) {
       if (_this['handler_' + msg_type])
-        _this['handler_' + msg_type]( msg[msg_type]);
+        _this['handler_' + msg_type]( msg[msg_type], should_redraw );
       else
         console.log( "ERROR - Unknown msg_type: " + msg_type );
     }
+
+    if ( should_redraw )
+      display.redraw();
   };
 };

@@ -6,7 +6,8 @@
 
 request( <<"username">>, Username, State) when is_binary(Username) andalso byte_size(Username) > 0 ->
   LoggedInState = login_player( Username, State ),
-  {world_pos_and_tiles(LoggedInState), LoggedInState };
+  WorldPosAndTiles = world_pos_and_tiles(LoggedInState),
+  {WorldPosAndTiles, LoggedInState };
 
 request( <<"username">>, _, State) ->
   { #{ error => <<"Invalid username.">>}, State };
@@ -67,5 +68,4 @@ login_player( Username, State ) ->
 
 world_pos_and_tiles( #{ x := X, y := Y} ) ->
   WorldData = view(X,Y,15),
-  #{tile_data => WorldData, world_pos => #{ x => X, y => Y} }.
-
+  #{ world_pos => #{ x => X, y => Y}, tile_data => WorldData }.

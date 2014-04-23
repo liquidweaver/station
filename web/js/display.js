@@ -17,8 +17,13 @@ function Display(canvas, log, tiles_wide, tiles_high, image_sources ) {
   this.interfaceBuffer = document.createElement("canvas");
   this.interfaceBuffer.width = this.frameBuffer.width;
   this.interfaceBuffer.height = this.frameBuffer.height;
-
   this.interfaceBufferCtx = this.interfaceBuffer.getContext("2d");
+
+  this.interfaceHitBuffer = document.createElement("canvas");
+  this.interfaceHitBuffer.width = this.frameBuffer.width;
+  this.interfaceHitBuffer.height = this.frameBuffer.height;
+  this.interfaceHitBufferCtx = this.interfaceHitBuffer.getContext("2d");
+
   this.loadAssets( image_sources );
 }
 
@@ -53,7 +58,7 @@ Display.prototype.redraw = function() {
   this.update_canvas();
 };
 
-Display.prototype.DELETEMESOON = function() {
+Display.prototype.intialize_interface = function() {
 
   //Draw interface
   RightHandX = (this.frameBuffer.width / 2 ) - this.tile_width;
@@ -91,6 +96,7 @@ Display.prototype.add_interface_element = function( sprite, id, x, y ) {
   elementCanvas.width = imageDetails.width;
   elementCanvas.height = imageDetails.height;
 
+  this.draw_sprite( sprite, x, y, this.interfaceBufferCtx );
   this.draw_sprite( sprite, 0, 0, elemCtx);
   var imageData = elemCtx.getImageData( 0, 0, elementCanvas.width, elementCanvas.height );
   var pixelArray = imageData.data;
@@ -113,11 +119,11 @@ Display.prototype.add_interface_element = function( sprite, id, x, y ) {
   //so that we can immediatly use that as a source for drawImage
   //because drawImage doesn't support a context as a source
   keyedCtx.putImageData( imageData, 0, 0 );
-  this.interfaceBufferCtx.drawImage( keyedElementCanvas, x, y);
+  this.interfaceHitBufferCtx.drawImage( keyedElementCanvas, x, y);
  };
 
 Display.prototype.load_interface_elements = function( elements ) {
-  this.interfaceBufferCtx.clearRect(0,0, this.interfaceBuffer.width - 1, this.interfaceBuffer.height - 1);
+  this.interfaceHitBufferCtx.clearRect(0,0, this.interfaceHitBuffer.width - 1, this.interfaceHitBuffer.height - 1);
 
   for( var i = 0; i < elements.length; i ++ ) {
     var element = elements[i];
@@ -134,7 +140,7 @@ Display.prototype.hit_detect = function(mouse_evt) {
       canvas_y = mouse_evt.clientY - Math.ceil(rect.top);
 
   //TODO check interface canvas
-  var interfaceData = this.interfaceBufferCtx.getImageData( canvas_x, canvas_y, 1, 1).data;
+  var interfaceData = this.interfaceHitBufferCtx.getImageData( canvas_x, canvas_y, 1, 1).data;
   if ( interfaceData[3] > 0 ) {
     return { interface_id: interfaceData[0] };
   }
@@ -178,7 +184,7 @@ Display.prototype.loadAssets = function(sources) {
       _this.mainCtx = _this.canvas.getContext("2d");
 
       console.log("Assets loaded.");
-      _this.DELETEMESOON();
+      _this.intialize_interface();
       setInterval(function(){_this.tick();}, 250);
     }
   };
@@ -231,12 +237,7 @@ Display.prototype.update_framebuffer = function() {
     }
   }
 
-  for ( var i = 0; i < this.interface_elements.length; i++ ) {
-    var element = this.interface_elements[i];
-    this.draw_sprite( element.sprite, element.x, element.y, this.frameBufferCtx );
-  }
-
-
+  this.frameBufferCtx.drawImage( this.interfaceBuffer, 0, 0 );
 };
 
 Display.prototype.clock_frame_map = function( delay_array ) {
