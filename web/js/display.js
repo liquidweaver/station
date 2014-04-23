@@ -61,27 +61,39 @@ Display.prototype.redraw = function() {
 Display.prototype.intialize_interface = function() {
 
   //Draw interface
-  RightHandX = (this.frameBuffer.width / 2 ) - this.tile_width;
-  RightHandY = this.frameBuffer.height - this.tile_height - 5;
-  LeftHandX = (this.frameBuffer.width / 2 );
-  LeftHandY = this.frameBuffer.height - this.tile_height - 5;
-  RSwapX = RightHandX;
-  RSwapY = RightHandY - this.tile_height;
-  LSwapX = LeftHandX;
-  LSwapY = LeftHandY - this.tile_height;
-  Pocket1X = LeftHandX + this.tile_width + 5;
-  Pocket1Y = LeftHandY;
-  Pocket2X = Pocket1X + this.tile_width + 5;
-  Pocket2Y = LeftHandY;
 
 
-  var elements = [{sprite: { bank: "screen1_Midnight", state: "act_equip"}, x: RSwapX, y: RSwapY, id: 0 },
-                  {sprite: { bank: "screen1_Midnight", state: "hand1"}, x: RSwapX, y: RSwapY, id: 1 },
-                  {sprite: { bank: "screen1_Midnight", state: "hand2"}, x: LSwapX, y: LSwapY, id: 2 },
-                  {sprite: { bank: "screen1_Midnight", state: "hand_inactive", direction: 2 }, x: RightHandX, y: RightHandY, id: 3 },
-                  {sprite: { bank: "screen1_Midnight", state: "hand_inactive", direction: 1 }, x: LeftHandX, y: LeftHandY, id: 4},
-                  {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket1X, y: Pocket1Y, id: 5 },
-                  {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket2X, y: Pocket2Y, id: 6 }
+  var RightHandX = (this.frameBuffer.width / 2 ) - this.tile_width;
+  var RightHandY = this.frameBuffer.height - this.tile_height - 5;
+  var LeftHandX = (this.frameBuffer.width / 2 );
+  var LeftHandY = this.frameBuffer.height - this.tile_height - 5;
+  var BackX = RightHandX - this.tile_width - 5;
+  var BackY = RightHandY;
+  var BeltX = BackX - this.tile_width - 5;
+  var BeltY = RightHandY;
+  var IdX = BeltX - this.tile_width - 5;
+  var IdY = RightHandY;
+  var RSwapX = RightHandX;
+  var RSwapY = RightHandY - this.tile_height;
+  var LSwapX = LeftHandX;
+  var LSwapY = LeftHandY - this.tile_height;
+  var Pocket1X = LeftHandX + this.tile_width + 5;
+  var Pocket1Y = LeftHandY;
+  var Pocket2X = Pocket1X + this.tile_width + 5;
+  var Pocket2Y = LeftHandY;
+
+
+  var elements = [
+    {sprite: { bank: "screen1_Midnight", state: "id"}, x: IdX, y: IdY, id: 0 },
+    {sprite: { bank: "screen1_Midnight", state: "belt"}, x: BeltX, y: BeltY, id: 1 },
+    {sprite: { bank: "screen1_Midnight", state: "back"}, x: BackX, y: BackY, id: 2 },
+    {sprite: { bank: "screen1_Midnight", state: "act_equip"}, x: RSwapX, y: RSwapY, id: 3 },
+    {sprite: { bank: "screen1_Midnight", state: "hand1"}, x: RSwapX, y: RSwapY, id: 4 },
+    {sprite: { bank: "screen1_Midnight", state: "hand2"}, x: LSwapX, y: LSwapY, id: 5 },
+    {sprite: { bank: "screen1_Midnight", state: "hand_inactive", direction: 2 }, x: RightHandX, y: RightHandY, id: 6 },
+    {sprite: { bank: "screen1_Midnight", state: "hand_inactive", direction: 1 }, x: LeftHandX, y: LeftHandY, id: 7},
+    {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket1X, y: Pocket1Y, id: 8 },
+    {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket2X, y: Pocket2Y, id: 9 }
   ];
 
   this.load_interface_elements( elements );
@@ -120,7 +132,7 @@ Display.prototype.add_interface_element = function( sprite, id, x, y ) {
   //because drawImage doesn't support a context as a source
   keyedCtx.putImageData( imageData, 0, 0 );
   this.interfaceHitBufferCtx.drawImage( keyedElementCanvas, x, y);
- };
+};
 
 Display.prototype.load_interface_elements = function( elements ) {
   this.interfaceHitBufferCtx.clearRect(0,0, this.interfaceHitBuffer.width - 1, this.interfaceHitBuffer.height - 1);
@@ -137,7 +149,7 @@ Display.prototype.load_interface_elements = function( elements ) {
 Display.prototype.hit_detect = function(mouse_evt) {
   var rect = this.canvas.getBoundingClientRect();
   var canvas_x = mouse_evt.clientX - Math.ceil(rect.left),
-      canvas_y = mouse_evt.clientY - Math.ceil(rect.top);
+  canvas_y = mouse_evt.clientY - Math.ceil(rect.top);
 
   //TODO check interface canvas
   var interfaceData = this.interfaceHitBufferCtx.getImageData( canvas_x, canvas_y, 1, 1).data;
@@ -211,18 +223,18 @@ Display.prototype.draw_sprite = function( sprite, x, y, dest_ctx ) {
 
   var spriteDetails = this.get_sprite_image_bank_details( sprite );
   dest_ctx.drawImage( image_bank, spriteDetails.x, spriteDetails.y,
-                      spriteDetails.width, spriteDetails.height,
-                      x, y,
-                      spriteDetails.width, spriteDetails.height );
+    spriteDetails.width, spriteDetails.height,
+    x, y,
+    spriteDetails.width, spriteDetails.height );
 };
 
 Display.prototype.update_framebuffer = function() {
   var delta_x = (this.tiles_wide - 1) / 2,
-      delta_y = (this.tiles_tall - 1) / 2;
+  delta_y = (this.tiles_tall - 1) / 2;
   var player_pos = this.world_pos;
 
   var x_min = player_pos.x - delta_x, y_min = player_pos.y - delta_y,
-      x_max = player_pos.x + delta_x, y_max = player_pos.y + delta_y;
+  x_max = player_pos.x + delta_x, y_max = player_pos.y + delta_y;
 
   for ( var x = x_min, tile_x = 0; x <= x_max; x++, tile_x++ ) {
     for ( var y = y_min, tile_y = 0; y <= y_max; y++, tile_y++ ) {
@@ -296,30 +308,30 @@ Display.prototype.parse_raw_dmi_meta = function( raw_dmi_meta ) {
 // INTERNAL
 
 Display.prototype.get_sprite_image_bank_details = function ( sprite ) {
-        var image_bank = this.image_banks[sprite.bank];
-        var width = image_bank.meta.width,
-            height = image_bank.meta.height;
-        var framesWide = image_bank.width / width;
-        var state_meta = image_bank.meta.states[sprite.state];
-        var frameOffset = state_meta.frameOffset;
-        var direction = Number(sprite.direction || 1);
-        if (state_meta.clock_frames && "undefined" != typeof sprite.start) {
-            var animOffset = state_meta.clock_frames[(this.clock - sprite.start) % state_meta.clock_frames.length];
-            frameOffset += animOffset * state_meta.dirs;
-        }
-        frameOffset += direction - 1;
-        var sx = frameOffset % framesWide * width,
-            sy = Math.floor(frameOffset / framesWide) * height;
-        return { x: sx, y: sy, width: width, height: height, image_bank: image_bank };
-    };
+  var image_bank = this.image_banks[sprite.bank];
+  var width = image_bank.meta.width,
+  height = image_bank.meta.height;
+  var framesWide = image_bank.width / width;
+  var state_meta = image_bank.meta.states[sprite.state];
+  var frameOffset = state_meta.frameOffset;
+  var direction = Number(sprite.direction || 1);
+  if (state_meta.clock_frames && "undefined" != typeof sprite.start) {
+    var animOffset = state_meta.clock_frames[(this.clock - sprite.start) % state_meta.clock_frames.length];
+    frameOffset += animOffset * state_meta.dirs;
+  }
+  frameOffset += direction - 1;
+  var sx = frameOffset % framesWide * width,
+  sy = Math.floor(frameOffset / framesWide) * height;
+  return { x: sx, y: sy, width: width, height: height, image_bank: image_bank };
+};
 
 Display.prototype.canvas_coords_to_tile_coords = function (canvas_x, canvas_y) {
-      return {  x: Math.floor(canvas_x / this.tile_width) + this.world_pos.x - (this.tiles_wide - 1) / 2,
-                y: Math.floor(canvas_y / this.tile_height) + this.world_pos.y - (this.tiles_tall - 1) / 2,
-                pxl_x: canvas_x % this.tile_width,
-                pxl_y: canvas_y % this.tile_height };
+  return {  x: Math.floor(canvas_x / this.tile_width) + this.world_pos.x - (this.tiles_wide - 1) / 2,
+    y: Math.floor(canvas_y / this.tile_height) + this.world_pos.y - (this.tiles_tall - 1) / 2,
+    pxl_x: canvas_x % this.tile_width,
+    pxl_y: canvas_y % this.tile_height };
   };
 
-Display.prototype.GetSpritesForTile = function(x, y) {
-  return this.tile_data[x + ',' + y];
-};
+  Display.prototype.GetSpritesForTile = function(x, y) {
+    return this.tile_data[x + ',' + y];
+  };
