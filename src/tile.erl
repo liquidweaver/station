@@ -57,13 +57,17 @@ handle_call(get_contents, _From, State=#{ contents := Contents }) ->
   {reply, Contents, State };
 
 handle_call(sprites, _From, State = #{ contents := Contents }) ->
-  Sprites =  [Type:sprite() || #{ type := Type } <- Contents ],
+  Sprites =  [Type:sprite( Object ) || Object = #{ type := Type } <- Contents ],
   {reply, Sprites, State };
 
-handle_call( {move_object, Object, To}, _From, State = #{ contents := Contents } ) ->
+handle_call( {move_object, Object = #{ type := ObjectType }, To}, _From, State = #{ contents := Contents, x := X, y := Y } ) ->
   % XXX check of object in contents
-  case tile:accept_object( To, Object ) of
-    ok              -> {reply, ok, State#{ contents => Contents -- [Object] } };
+  Object1 = case erlang:function_exported( ObjectType, moving, 2 ) of
+    true -> ObjectType:moving( {{X,Y}, To}, Object );
+    false -> Object
+  end,
+  case tile:accept_object( To, Object1 ) of
+    ok  -> {reply, {ok, Object1}, State#{ contents => Contents -- [Object] } };
     {error, Reason} -> {reply, {error, Reason}, State }
   end;
 

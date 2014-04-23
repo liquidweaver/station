@@ -1,3 +1,4 @@
 -module(b_object).
 
--callback sprite() -> Representation :: map().
+-callback sprite( ObjectState :: map() ) -> Representation :: map().
+-callback new( Args :: map() ) -> ObjectState :: map().

@@ -1,5 +1,6 @@
 -module(client_handler_tests).
 -include_lib("eunit/include/eunit.hrl").
+-include("display.hrl").
 
 remove_player_from_world_calls_tile_remove_object_test() ->
   meck:new( tile ),
@@ -17,11 +18,11 @@ request_when_no_user_and_username_sent_should_set_username_test() ->
   State = #{},
   Expected = <<"bob">>,
   {_,
-    #{ username := Actual, player_object := #{ type := o_player, username := Actual } }
+    #{ username := Actual, player_object := #{ type := o_player, name := Actual } }
   } = client_handler:request(<<"username">>, Expected, State),
   ?assertEqual( Expected, Actual ),
   ?assert( meck:validate( tile ) ),
-  ?assert( meck:called( tile, add_object, ['_', #{type => o_player, username => Expected}])),
+  ?assert( meck:called( tile, add_object, ['_', '_'])),
   meck:unload(tile).
 
 request_when_new_login_should_send_tile_data_world_pos_test()->
@@ -63,10 +64,10 @@ request_move_intent_test_() ->
   fun(_) ->
     meck:unload(tile)
   end,
-  [{"right_increments_client_state_x",
+  [{"right_increments_client_state_x_and_sets_direction_to_north",
     fun() ->
       meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
-      meck:expect( tile, move_object, 3, ok ),
+      meck:expect( tile, move_object, 3, {ok, newplayerobject1} ),
       State = #{ x => 7, y => 7, username => ignore, player_object => ignored },
       Actual = client_handler:request( <<"move_intent">>, <<"right">>, State ),
       ?assertMatch( {_,#{ x :=8 }}, Actual )
@@ -75,7 +76,7 @@ request_move_intent_test_() ->
   {"left_decrements_client_state_x",
   fun() ->
     meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
-    meck:expect( tile, move_object, 3, ok ),
+    meck:expect( tile, move_object, 3, {ok, newplayerobject1} ),
     State = #{ x => 7, y => 7, username => ignore, player_object => ignored },
     Actual = client_handler:request( <<"move_intent">>, <<"left">>, State ),
     ?assertMatch( {_,#{ x := 6 }}, Actual )
@@ -84,7 +85,7 @@ request_move_intent_test_() ->
   {"down_increments_client_state_y",
   fun() ->
     meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
-    meck:expect( tile, move_object, 3, ok ),
+    meck:expect( tile, move_object, 3, {ok, newplayerobject1} ),
     State = #{ x => 7, y => 7, username => ignore, player_object => ignored },
     Actual = client_handler:request( <<"move_intent">>, <<"down">>, State ),
     ?assertMatch( {_, #{ y := 8 }}, Actual )
@@ -93,7 +94,7 @@ request_move_intent_test_() ->
   {"up_decrements_client_state_y",
   fun() ->
     meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
-    meck:expect( tile, move_object, 3, ok ),
+    meck:expect( tile, move_object, 3, {ok, newplayerobject1} ),
     State = #{ x => 7, y => 7, username => ignore, player_object => ignored },
     Actual = client_handler:request( <<"move_intent">>, <<"up">>, State ),
     ?assertMatch( {_,#{ y := 6 }}, Actual )

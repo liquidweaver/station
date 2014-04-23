@@ -42,8 +42,8 @@ remove_player_from_world( #{ x := X, y := Y, player_object := PlayerObject } ) -
 
 move_player( OldState = #{ x := OldX, y := OldY }, NewState = #{ x := NewX, y := NewY, player_object := PlayerObject } ) ->
     case tile:move_object( {OldX, OldY}, {NewX, NewY}, PlayerObject ) of
-    ok          -> { world_pos_and_tiles(NewState), NewState };
-    {error, _}  -> { world_pos_and_tiles(OldState), OldState }
+    {ok, NewObject } -> { world_pos_and_tiles(NewState), NewState#{ player_object => NewObject } };
+    {error, _}       -> { world_pos_and_tiles(OldState), OldState }
     end.
 
 view(X,Y, ViewSize) when is_integer(ViewSize) andalso ViewSize rem 2 /= 0 ->
@@ -59,7 +59,7 @@ view(X,Y, ViewSize) when is_integer(ViewSize) andalso ViewSize rem 2 /= 0 ->
   maps:from_list( Sprites ).
 
 create_player_object( Username ) ->
-  #{ type => o_player, username => Username  }.
+  o_player:new( #{name => Username} ).
 
 login_player( Username, State ) ->
   PlayerObject = create_player_object(Username),
