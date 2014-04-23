@@ -1,9 +1,15 @@
 -module(o_floor).
 
--export([sprite/1, new/1]).
+-export([ new/1, sprite/1, moving/2, blocks/2]).
+
+new(_) ->
+  #{ type => ?MODULE }.
 
 sprite(_) ->
   #{ type => ?MODULE, bank => floors, state => floor }.
 
-new(_) ->
-  #{ type => ?MODULE }.
+moving({_From, _To}, State ) ->
+  State.
+
+blocks(_Other, Self) ->
+  {false, Self}.

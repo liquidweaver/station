@@ -62,10 +62,8 @@ handle_call(sprites, _From, State = #{ contents := Contents }) ->
 
 handle_call( {move_object, Object = #{ type := ObjectType }, To}, _From, State = #{ contents := Contents, x := X, y := Y } ) ->
   % XXX check of object in contents
-  Object1 = case erlang:function_exported( ObjectType, moving, 2 ) of
-    true -> ObjectType:moving( {{X,Y}, To}, Object );
-    false -> Object
-  end,
+  Object1 = ObjectType:moving( {{X,Y}, To}, Object ),
+
   case tile:accept_object( To, Object1 ) of
     ok  -> {reply, {ok, Object1}, State#{ contents => Contents -- [Object] } };
     {error, Reason} -> {reply, {error, Reason}, State }
@@ -74,9 +72,14 @@ handle_call( {move_object, Object = #{ type := ObjectType }, To}, _From, State =
 handle_call( {remove_object, Object}, _From, State = #{ contents := Contents } ) ->
   {reply, ok, State#{ contents => Contents -- [Object] } };
 
-handle_call( {accept_object, Object}, _From, State = #{ contents := Contents } ) ->
-  % STUBBED - shouldn't always accept
-  {reply, ok, State#{ contents => Contents ++ [Object] } };
+handle_call( {accept_object, ProposedObject}, _From, State = #{ contents := Contents } ) ->
+  case lists:mapfoldl( fun( TestObject = #{ type := Type}, BlockedSoFar ) ->
+                    {Block, NewObjectState } = Type:blocks( ProposedObject, TestObject ),
+                    {NewObjectState, BlockedSoFar or Block}
+                  end, false, Contents ) of
+    {Contents1, true}  -> {reply, {error, blocked}, State#{ contents := Contents1 } };
+    {Contents1, false} -> {reply, ok, State#{ contents => Contents1 ++ [ProposedObject] } }
+  end;
 
 %% @private
 handle_call(_Request, _From, State) ->
