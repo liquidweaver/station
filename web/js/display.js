@@ -306,17 +306,16 @@ Display.prototype.parse_raw_dmi_meta = function( raw_dmi_meta ) {
 };
 
 // INTERNAL
-
 Display.prototype.get_sprite_image_bank_details = function ( sprite ) {
 
-  var directions = { south: 1, north: 2, east: 3, west: 4};
-  var image_bank = this.image_banks[sprite.bank];
-  var width = image_bank.meta.width,
-  height = image_bank.meta.height;
-  var framesWide = image_bank.width / width;
-  var state_meta = image_bank.meta.states[sprite.state];
+  var directions  = { south: 1, north: 2, east: 3, west: 4};
+  var image_bank  = this.image_banks[sprite.bank];
+  var width       = image_bank.meta.width,
+  height          = image_bank.meta.height;
+  var framesWide  = image_bank.width / width;
+  var state_meta  = image_bank.meta.states[sprite.state];
   var frameOffset = state_meta.frameOffset;
-  var direction = directions[sprite.direction] || 1;
+  var direction   = directions[sprite.direction] || 1;
   if (state_meta.clock_frames && "undefined" != typeof sprite.start) {
     var animOffset = state_meta.clock_frames[(this.clock - sprite.start) % state_meta.clock_frames.length];
     frameOffset += animOffset * state_meta.dirs;
