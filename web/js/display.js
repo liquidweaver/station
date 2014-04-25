@@ -316,7 +316,8 @@ Display.prototype.get_sprite_image_bank_details = function ( sprite ) {
   var state_meta  = image_bank.meta.states[sprite.state];
   var frameOffset = state_meta.frameOffset;
   var direction   = directions[sprite.direction] || 1;
-  if (state_meta.clock_frames && "undefined" != typeof sprite.start) {
+  if (state_meta.clock_frames) {
+    if ( 'undefined' == typeof sprite.start ) sprite.start = this.clock;
     var animOffset = state_meta.clock_frames[(this.clock - sprite.start) % state_meta.clock_frames.length];
     frameOffset += animOffset * state_meta.dirs;
   }
