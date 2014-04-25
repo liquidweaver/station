@@ -1,8 +1,8 @@
 -module(o_floor).
 
--export([ new/1, sprite/1, moved/2, blocks/2]).
+-export([ new/2, sprite/1, moved/2, blocks/2]).
 
-new(_) ->
+new(_,_) ->
   #{ type => ?MODULE }.
 
 sprite(_) ->

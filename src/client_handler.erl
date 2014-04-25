@@ -58,11 +58,11 @@ view(X,Y, ViewSize) when is_integer(ViewSize) andalso ViewSize rem 2 /= 0 ->
     || TileX <- lists:seq(StartX, EndX), TileY <- lists:seq(StartY,EndY) ],
   maps:from_list( Sprites ).
 
-create_player_object( Username ) ->
-  o_player:new( #{name => Username} ).
+create_player_object( Coords, Username ) ->
+  o_player:new( Coords, #{name => Username} ).
 
 login_player( Username, State ) ->
-  PlayerObject = create_player_object(Username),
+  PlayerObject = create_player_object({7,7}, Username),
   tile:add_object( {7,7}, PlayerObject ),
   State#{ username => Username, player_object => PlayerObject, x => 7, y => 7}.
 

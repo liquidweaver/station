@@ -16,8 +16,8 @@ start_link() ->
 
 init([]) ->
   Tiles = [ case X =:= Y of
-              true -> ?CHILD( {X,Y}, tile, worker, {X,Y,[o_floor:new(#{}), o_door:new(#{ status => closed }) ]} );
-              false -> ?CHILD( {X,Y}, tile, worker, {X,Y,[o_floor:new(#{})]} )
+              true -> ?CHILD( {X,Y}, tile, worker, {X,Y,[o_floor:new({X,Y},#{}), o_door:new({X,Y},#{ status => closed }) ]} );
+              false -> ?CHILD( {X,Y}, tile, worker, {X,Y,[o_floor:new({X,Y},#{})]} )
             end || X <- lists:seq(0,29), Y <- lists:seq(0,29) ],
   {ok, { {one_for_one, 5, 10}, Tiles} }.
 

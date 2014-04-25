@@ -35,6 +35,7 @@ accept_object( From, To, Object ) ->
   end.
 
 remove_object( Coords, Object ) ->
+  % TODO Remove callback to notify actor-objects
   case coords_to_pid(Coords) of
     undefined -> {error, no_tile};
     Pid       -> gen_server:call( Pid, {remove_object, Object} )

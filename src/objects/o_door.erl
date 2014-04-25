@@ -1,28 +1,28 @@
 -module(o_door).
 -behavior(b_object).
--export([ new/1, sprite/1, moved/2, blocks/2]).
+-export([ new/2, sprite/1, moved/2, blocks/2]).
 -behavior(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
-new( Args ) ->
-  {ok, Pid}= start_link( Args ),
+new( Coords, Args ) ->
+  {ok, Pid}= start_link( Coords, Args ),
   #{ type => ?MODULE, pid => Pid }.
 
 sprite( #{ pid := Pid } ) ->
   gen_server:call( Pid, sprite ).
 
-moved({_From, _To}, ObjectState ) ->
-  ObjectState. % noop
+moved({_From, To}, ObjectState ) ->
+  ObjectState#{ coords => To }.
 
 blocks(Other, ObjectState = #{ pid := Pid }) ->
   Block = gen_server:call( Pid, {blocks, Other} ),
   {Block, ObjectState}.
 
-start_link( Args ) ->
-  gen_server:start_link(?MODULE, Args, []).
+start_link( Coords, Args ) ->
+  gen_server:start_link(?MODULE, {Coords, Args}, []).
 
-init( #{ status := Status } ) ->
-  {ok, #{ status => Status }}.
+init( { Coords, #{ status := Status } } ) ->
+  {ok, #{ status => Status, coords => Coords }}.
 
 handle_call( sprite, _From, State = #{ status := Status } ) ->
   SpriteMap = maps:merge( #{ type => ?MODULE }, status_to_bank_and_state( Status ) ),

@@ -1,8 +1,8 @@
 -module(o_player).
 
--export([ new/1, sprite/1, moved/2, blocks/2]).
+-export([ new/2, sprite/1, moved/2, blocks/2]).
 
-new( #{ name := Name } ) ->
+new( _,#{ name := Name } ) ->
   #{ type => ?MODULE, direction => south, name => Name }.
 
 sprite( #{ direction := Direction } ) ->
