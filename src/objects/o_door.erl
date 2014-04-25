@@ -1,6 +1,6 @@
 -module(o_door).
 -behavior(b_object).
--export([ new/1, sprite/1, moving/2, blocks/2]).
+-export([ new/1, sprite/1, moved/2, blocks/2]).
 -behavior(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
@@ -11,7 +11,7 @@ new( Args ) ->
 sprite( #{ pid := Pid } ) ->
   gen_server:call( Pid, sprite ).
 
-moving({_From, _To}, ObjectState ) ->
+moved({_From, _To}, ObjectState ) ->
   ObjectState. % noop
 
 blocks(Other, ObjectState = #{ pid := Pid }) ->

@@ -1,6 +1,6 @@
 -module(o_player).
 
--export([ new/1, sprite/1, moving/2, blocks/2]).
+-export([ new/1, sprite/1, moved/2, blocks/2]).
 
 new( #{ name := Name } ) ->
   #{ type => ?MODULE, direction => south, name => Name }.
@@ -8,7 +8,7 @@ new( #{ name := Name } ) ->
 sprite( #{ direction := Direction } ) ->
   #{ type => ?MODULE, bank => human, state => fatbody_s, direction => Direction}.
 
-moving( {From, To}, State = #{ direction := OldDirection } ) ->
+moved( {From, To}, State = #{ direction := OldDirection } ) ->
   NewDirection = direction_from_coords( From, To, OldDirection ),
   State#{ direction => NewDirection }.
 

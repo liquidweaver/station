@@ -1,7 +1,7 @@
 -module(tile).
 -export([start_link/1]).
 
--export([sprites/1, add_object/2, move_object/3, accept_object/2, remove_object/2]).
+-export([sprites/1, add_object/2, move_object/3, accept_object/3, remove_object/2]).
 
 -export([coords_to_pid/1]).
 
@@ -28,10 +28,10 @@ move_object( From, To, Object ) ->
     Pid       -> gen_server:call( Pid, {move_object, Object, To} )
   end.
 
-accept_object( Coords, Object ) ->
-  case coords_to_pid(Coords) of
+accept_object( From, To, Object ) ->
+  case coords_to_pid(To) of
     undefined -> {error, no_tile};
-    Pid       -> gen_server:call( Pid, {accept_object, Object} )
+    Pid       -> gen_server:call( Pid, {accept_object, From, Object} )
   end.
 
 remove_object( Coords, Object ) ->
@@ -60,25 +60,26 @@ handle_call(sprites, _From, State = #{ contents := Contents }) ->
   Sprites =  [Type:sprite( Object ) || Object = #{ type := Type } <- Contents ],
   {reply, Sprites, State };
 
-handle_call( {move_object, Object = #{ type := ObjectType }, To}, _From, State = #{ contents := Contents, x := X, y := Y } ) ->
+handle_call( {move_object, Object, To}, _From, State = #{ contents := Contents, x := X, y := Y } ) ->
   % XXX check of object in contents
-  Object1 = ObjectType:moving( {{X,Y}, To}, Object ),
 
-  case tile:accept_object( To, Object1 ) of
-    ok  -> {reply, {ok, Object1}, State#{ contents => Contents -- [Object] } };
+  case tile:accept_object( {X,Y}, To, Object ) of
+    {ok, MovedObject}  -> {reply, {ok, MovedObject}, State#{ contents => Contents -- [Object] } };
     {error, Reason} -> {reply, {error, Reason}, State }
   end;
 
 handle_call( {remove_object, Object}, _From, State = #{ contents := Contents } ) ->
   {reply, ok, State#{ contents => Contents -- [Object] } };
 
-handle_call( {accept_object, ProposedObject}, _From, State = #{ contents := Contents } ) ->
+handle_call( {accept_object, From, ProposedObject = #{ type := ObjectType }}, _From, State = #{ contents := Contents, x := X, y := Y } ) ->
   case lists:mapfoldl( fun( TestObject = #{ type := Type}, BlockedSoFar ) ->
                     {Block, NewObjectState } = Type:blocks( ProposedObject, TestObject ),
                     {NewObjectState, BlockedSoFar or Block}
-                  end, false, Contents ) of
+                  end, false, Contents ) of % We update contents in case things are 'bumped'
     {Contents1, true}  -> {reply, {error, blocked}, State#{ contents := Contents1 } };
-    {Contents1, false} -> {reply, ok, State#{ contents => Contents1 ++ [ProposedObject] } }
+    {Contents1, false} ->
+      MovedObject = ObjectType:moved( {From, {X,Y}}, ProposedObject ),
+      {reply, {ok, MovedObject}, State#{ contents => Contents1 ++ [MovedObject] } }
   end;
 
 %% @private
