@@ -90,8 +90,8 @@ Display.prototype.intialize_interface = function() {
     {sprite: { bank: "screen1_Midnight", state: "act_equip"}, x: RSwapX, y: RSwapY, id: 3 },
     {sprite: { bank: "screen1_Midnight", state: "hand1"}, x: RSwapX, y: RSwapY, id: 4 },
     {sprite: { bank: "screen1_Midnight", state: "hand2"}, x: LSwapX, y: LSwapY, id: 5 },
-    {sprite: { bank: "screen1_Midnight", state: "hand_inactive", direction: 2 }, x: RightHandX, y: RightHandY, id: 6 },
-    {sprite: { bank: "screen1_Midnight", state: "hand_inactive", direction: 1 }, x: LeftHandX, y: LeftHandY, id: 7},
+    {sprite: { bank: "screen1_Midnight", state: "hand_inactive", direction: "north" }, x: RightHandX, y: RightHandY, id: 6 },
+    {sprite: { bank: "screen1_Midnight", state: "hand_inactive", direction: "south" }, x: LeftHandX, y: LeftHandY, id: 7},
     {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket1X, y: Pocket1Y, id: 8 },
     {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket2X, y: Pocket2Y, id: 9 }
   ];
