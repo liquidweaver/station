@@ -32,7 +32,7 @@ Protocol.prototype.handler_world_pos = function( position, should_redraw ) {
 };
 
 Protocol.prototype.handler_error = function( error_msg, should_redraw  ) {
-  alert( error_msg );
+  this.log.log( error_msg );
 };
 
 Protocol.prototype.send_message = function( msg_type, data ) {
