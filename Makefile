@@ -18,6 +18,7 @@ start: compile generate
 
 %.beam : %.erl $(DEPSOLVER_PLT)
 	erlc +debug_info -o behaviors $<
+	cp behaviors/*.beam ebin/
 	dialyzer --add_to_plt --plt $(DEPSOLVER_PLT) -r behaviors
 
 %.meta : %.dmi
