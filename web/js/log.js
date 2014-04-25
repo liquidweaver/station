@@ -1,9 +1,9 @@
-function Log( textarea ) {
-  this.textarea = textarea;
+function Log( log_div ) {
+  this.log_div = log_div;
 }
 
-Log.prototype.textarea = undefined;
+Log.prototype.log_div = undefined;
 
 Log.prototype.log = function(text) {
-  this.textarea.value += text + '\n';
+  this.log_div.innerText += text + '\n';
 };

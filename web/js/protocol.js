@@ -43,12 +43,14 @@ Protocol.prototype.send_message = function( msg_type, data ) {
 };
 
 Protocol.prototype.connect_websocket = function( url ) {
+  if (this.server_socket) this.server_socket.close();
   this.server_socket = new WebSocket( url || this.url );
+  var _this = this;
   this.server_socket.onopen = function(){
-    console.log('Connection open!');
+    _this.log.log('Connected to ' + this.url);
   };
   this.server_socket.onclose = function(){
-    console.log('Connection closed');
+    _this.log.log('Disconnected from ' + this.url);
   };
   this.server_socket.onerror = function(error){
     console.log('Error detected: ' + error);

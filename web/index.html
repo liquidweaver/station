@@ -15,17 +15,23 @@
       font-size: .8em;
     }
     canvas {
+      width: 480;
+      height: 480;
       cursor: crosshair;
     }
     .display {
       float: left;
     }
 
-    .side_bar textarea {
+    .side_bar {
+      float: left;
       height: 480px;
-      width: 200px;
+      width: 400px;
+      font-size: .8em;
       box-sizing: border-box;
+      border: 1px solid;
     }
+
 
   </style>
   <script src="assets.js"></script>
@@ -47,12 +53,6 @@
       .button()
       .click(function( event ) {
         $.globals.Protocol.connect_websocket( $('#server_url').val() );
-        event.preventDefault();
-      });
-      $( "#login_btn" )
-      .button()
-      .click(function( event ) {
-        $.globals.Protocol.send_message( 'username', $('#username').val() );
         event.preventDefault();
       });
       $(document).keydown(function(e) {
@@ -87,15 +87,12 @@
         <label for="server_url">Server URL</label><input type="text" id="server_url" value="ws://home.joshuaweaver.com:9001/">
         <button type="button" class="ui-button" id="connect_btn">Connect</button>
         <label for="username">Username</label><input type="text" id="username">
-        <button type="button" class="ui-button" id="login_btn">Login</button>
       </fieldset>
     </div>
     <div class="display">
       <canvas id="main_canvas"></canvas>
     </div>
-    <div class="side_bar">
-      <textarea id="log"></textarea>
-    </div>
+    <div id="log" class="side_bar ui-widget"></div>
   </div>
 </body>
 </html>
