@@ -57,8 +57,8 @@ init({X,Y}) ->
 handle_call(get_contents, _From, State=#{ contents := Contents }) ->
   {reply, Contents, State };
 
-handle_call(sprites, _From, State = #{ contents := Contents }) ->
-  Sprites =  [Type:sprite( Object ) || Object = #{ type := Type } <- Contents ],
+handle_call(sprites, {FromPid, _}, State = #{ contents := Contents }) ->
+  Sprites =  [Type:sprite( FromPid, Object ) || Object = #{ type := Type } <- Contents ],
   {reply, Sprites, State };
 
 handle_call( {move_object, Object, To}, _From, State = #{ contents := Contents, x := X, y := Y } ) ->

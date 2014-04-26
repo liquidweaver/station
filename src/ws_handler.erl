@@ -26,6 +26,11 @@ websocket_handle({text, Msg}, Req, State) ->
 websocket_handle(_Data, Req, State) ->
   {ok, Req, State}.
 
+websocket_info({sprite, {TileX, TileY}, SpriteMap }, Req, State) ->
+  CoordsBin = <<(integer_to_binary(TileX))/binary,",",(integer_to_binary(TileY))/binary >>,
+  Reply = map_codec:encode( #{sprite_data => maps:put( CoordsBin, SpriteMap, #{}) }),
+  {reply, {text, Reply}, Req, State };
+
 websocket_info(need_login, Req, State) ->
   {reply, {text, map_codec:encode(#{ need_login => <<"Please pass your username.">> } )}, Req, State}.
 

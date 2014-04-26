@@ -1,7 +1,7 @@
 -module(b_object).
 
 -callback new( Coords :: {pos_integer(), pos_integer()}, Args :: map() ) -> ObjectState :: map().
--callback sprite( ObjectState :: map() ) -> Representation :: map().
+-callback sprite( From :: pid(), ObjectState :: map() ) -> Representation :: map().
 -callback moved( {  From :: {pos_integer(), pos_integer()},
                     To :: {pos_integer(), pos_integer()}},
                     ObjectState :: map() )

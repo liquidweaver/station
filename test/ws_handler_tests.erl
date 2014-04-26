@@ -41,3 +41,9 @@ websocket_should_take_no_action_on_non_text_messages_test() ->
 websocket_info_need_login_should_send_login_request_test() ->
   Expected = {reply, {text, map_codec:encode(#{ need_login => <<"Please pass your username.">>})}, req1, state1 },
   ?assertEqual( Expected, ws_handler:websocket_info( need_login, req1, state1 )).
+
+websocket_info_sprite_should_return_tile_data_test() ->
+  SpriteData = #{ type => o_space, bank => space, state => 0},
+  Expected = map_codec:encode( #{sprite_data => #{ <<"0,0">> => SpriteData} } ),
+  {reply, {text, Actual}, ignored, also_ignored} = ws_handler:websocket_info( {sprite, {0,0}, SpriteData }, ignored, also_ignored ),
+  ?assertEqual( Expected, Actual ).
