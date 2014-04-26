@@ -2,7 +2,8 @@ REBAR=`which rebar`
 BEHAVIORS := $(patsubst %.erl,%.beam,$(wildcard behaviors/*.erl))
 SPRITES := $(patsubst %.dmi,%.meta,$(wildcard web/sprites/*.dmi))
 DEPSOLVER_PLT=.dialyzer_plt
-all: compile $(SPRITES)
+HOWLERJS=web/js/howler.js
+all: compile $(SPRITES) $(HOWLERJS)
 update_deps:
 	@$(REBAR) update-deps
 compile: update_deps $(BEHAVIORS)
@@ -15,6 +16,9 @@ generate:
 	@cd rel && rebar generate
 start: compile generate
 	rel/station/bin/station console
+
+$(HOWLERJS): howler.js/howler.min.js
+	cp howler.js/howler.min.js $(HOWLERJS)
 
 %.beam : %.erl $(DEPSOLVER_PLT)
 	erlc +debug_info -o behaviors $<

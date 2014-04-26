@@ -2,6 +2,7 @@
 **/*.swp
 **/*.beam
 **/.eunit
+web/js/howler.js
 web/sprites/*.meta
 deps
 rel/station
