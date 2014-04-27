@@ -25,8 +25,8 @@ start_link( Coords, Args ) ->
 init( { Coords, #{ status := Status } } ) ->
   {ok, #{ status => Status, coords => Coords}}.
 
-handle_call( sprite, _From, State = #{ status := Status } ) ->
-  SpriteMap = maps:merge( #{ type => ?MODULE }, status_to_bank_and_state( Status ) ),
+handle_call( sprite, _From, State ) ->
+  SpriteMap = state_to_sprite( State ),
   {reply, SpriteMap, State };
 
 handle_call( {blocks, _Other}, _From, State = #{ status := open } ) ->
@@ -40,8 +40,8 @@ handle_call( {blocks, _Other}, _From, State = #{ status := closing } ) ->
 
 handle_call( {blocks, _Other}, _From, State = #{ status := closed, coords := Coords } ) -> % bumped
   tile:notify_update( Coords ),
-  timer:send_after( 3000, open ),
-  {reply, true, State#{ status => opening } }.
+  timer:send_after( game_time:tick_length(12), open ),
+  {reply, true, State#{ status => opening, state_start => game_time:timestamp() } }.
 
 
 handle_info(open, State = #{ coords := Coords }) ->
@@ -51,8 +51,8 @@ handle_info(open, State = #{ coords := Coords }) ->
 
 handle_info(closing, State = #{ coords := Coords }) ->
   tile:notify_update( Coords ),
-  timer:send_after( 3000, closed ),
-  {noreply, State#{ status => closing } };
+  timer:send_after( game_time:tick_length(12), closed ),
+  {noreply, State#{ status => closing, state_start => game_time:timestamp() } };
 
 handle_info(closed, State = #{ coords := Coords }) ->
   tile:notify_update( Coords ),
@@ -64,7 +64,14 @@ handle_cast( {coords, Coords}, State ) ->
 handle_cast( _Args, State ) ->
   {noreply, State}.
 
-status_to_bank_and_state( closed ) -> #{ bank => 'Door1', state => door1 };
-status_to_bank_and_state( opening ) -> #{ bank => 'Door1', state => doorc0 };
-status_to_bank_and_state( open ) -> #{ bank => 'Door1', state => door0 };
-status_to_bank_and_state( closing ) -> #{bank => 'Door1', state => doorc1 }.
+state_to_sprite( #{ status := closed } ) ->
+  #{ type => ?MODULE, bank => 'Door1', state => door1 };
+
+state_to_sprite( #{ status := open } ) ->
+  #{ type => ?MODULE, bank => 'Door1', state => door0 };
+
+state_to_sprite( #{ status := opening, state_start := Start  } ) ->
+  #{ type => ?MODULE, bank => 'Door1', state => doorc0, start => Start };
+
+state_to_sprite( #{ status := closing, state_start := Start  }) ->
+  #{ type => ?MODULE, bank => 'Door1', state => doorc1, start => Start }.

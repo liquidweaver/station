@@ -101,7 +101,7 @@ handle_cast( contents_changed, State = #{ contents := Contents, tile_subscribers
     0 -> noop;
     _ ->
       Sprites =  [Type:sprite( Object ) || Object = #{ type := Type } <- Contents ],
-      sets:fold(  fun(Subscriber, ignore) ->
+      sets:fold(  fun(Subscriber, _) ->
                       %gen_server:cast( Subscriber, {tile_data, {X,Y}, Sprites} )
                       %%% XXX
                       Subscriber ! {tile_data, {X,Y}, Sprites }

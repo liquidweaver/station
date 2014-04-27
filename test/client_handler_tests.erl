@@ -34,7 +34,6 @@ request_when_new_login_should_send_tile_data_world_pos_test()->
   ?assertMatch( #{tile_data := _, world_pos := _ }, Actual ),
   meck:unload(tile).
 
-
 request_when_no_user_should_send_need_login_test() ->
   State = #{ username => undefined },
   Expected = { #{need_login => <<"Please pass your username.">>}, State },

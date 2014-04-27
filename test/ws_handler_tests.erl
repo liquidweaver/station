@@ -22,7 +22,7 @@ websocket_terminate_should_call_client_handler_remove_player_and_return_result_t
 
 websocket_handle_delegates_text_requests_to_client_handler_request_test() ->
   meck:new(client_handler),
-  meck:expect( client_handler, request, 3, {replydata1, state1} ),
+  meck:expect( client_handler, request, 3, {#{}, state1} ),
   meck:new(map_codec),
   meck:expect( map_codec, encode, 1, ignored ),
 

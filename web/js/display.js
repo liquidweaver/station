@@ -34,6 +34,7 @@ Display.prototype.tiles_wide = 0;
 Display.prototype.tiles_tall = 0;
 Display.prototype.tile_width = 32;
 Display.prototype.tile_height = 32;
+Display.prototype.millisecond_refresh_interval = 250;
 Display.prototype.tile_data = {};
 Display.prototype.world_pos = {x:0, y:0};
 Display.prototype.frameBuffer = undefined;
@@ -42,6 +43,7 @@ Display.prototype.mainCtx = undefined;
 Display.prototype.hit_canvas = undefined;
 Display.prototype.hit_ctx = undefined;
 Display.prototype.log = undefined;
+Display.prototype.tick_length = 1000;
 Display.prototype.interface_elements = [];
 
 Display.prototype.update_canvas = function() {
@@ -49,7 +51,7 @@ Display.prototype.update_canvas = function() {
 };
 
 Display.prototype.tick = function() {
-  this.clock++;
+  this.clock += this.millisecond_refresh_interval;
   this.redraw();
 };
 
@@ -197,7 +199,7 @@ Display.prototype.loadAssets = function(sources) {
 
       console.log("Assets loaded.");
       _this.intialize_interface();
-      setInterval(function(){_this.tick();}, 250);
+      setInterval(function(){_this.tick();}, _this.millisecond_refresh_interval);
     }
   };
 
@@ -317,9 +319,15 @@ Display.prototype.get_sprite_image_bank_details = function ( sprite ) {
   var frameOffset = state_meta.frameOffset;
   var direction   = directions[sprite.direction] || 1;
   if (state_meta.clock_frames) {
-    if ( 'undefined' == typeof sprite.start ) sprite.start = this.clock;
-    var animOffset = state_meta.clock_frames[(this.clock - sprite.start) % state_meta.clock_frames.length];
-    frameOffset += animOffset * state_meta.dirs;
+    var ms_delta = this.clock - sprite.start;
+    var tick_delta = Math.floor(ms_delta/this.tick_length);
+    if ( tick_delta < state_meta.clock_frames.length ) {
+      var animOffset = state_meta.clock_frames[tick_delta];
+      frameOffset += animOffset * state_meta.dirs;
+    }
+    else {
+      frameOffset += state_meta.clock_frames.slice(-1)[0]  * state_meta.dirs; // Show last frame
+    }
   }
   frameOffset += direction - 1;
   var sx = frameOffset % framesWide * width,

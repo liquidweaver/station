@@ -20,7 +20,7 @@ websocket_handle({text, Msg}, Req, State) ->
   catch
     { error, Code } -> { #{error => Code}, State }
   end,
-  Reply = map_codec:encode(ReplyData),
+  Reply = map_codec:encode(ReplyData#{ timestamp => game_time:timestamp()}),
   {reply, {text, Reply}, Req, State1};
 
 websocket_handle(_Data, Req, State) ->
@@ -36,4 +36,3 @@ websocket_info(need_login, Req, State) ->
 
 websocket_terminate(_Reason, _Req, State) ->
   client_handler:remove_player_from_world(State).
-

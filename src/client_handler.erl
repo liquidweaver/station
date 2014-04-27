@@ -7,7 +7,7 @@
 request( <<"username">>, Username, State) when is_binary(Username) andalso byte_size(Username) > 0 ->
   LoggedInState = login_player( Username, State ),
   WorldPosAndTiles = world_pos_and_tiles(LoggedInState),
-  {WorldPosAndTiles, LoggedInState };
+  {WorldPosAndTiles#{ tick_length => game_time:tick_length(1) }, LoggedInState };
 
 request( <<"username">>, _, State) ->
   { #{ error => <<"Invalid username.">>}, State };
@@ -64,7 +64,7 @@ create_player_object( Coords, Username ) ->
 login_player( Username, State ) ->
   PlayerObject = create_player_object({7,7}, Username),
   tile:add_object( {7,7}, PlayerObject ),
-  State#{ username => Username, player_object => PlayerObject, x => 7, y => 7}.
+  State#{ username => Username, player_object => PlayerObject, x => 7, y => 7 }.
 
 world_pos_and_tiles( #{ x := X, y := Y} ) ->
   WorldData = view(X,Y,15),
