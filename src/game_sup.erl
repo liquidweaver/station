@@ -1,4 +1,4 @@
--module(station_sup).
+-module(game_sup).
 
 -behaviour(supervisor).
 
@@ -9,7 +9,7 @@
 -export([init/1]).
 
 %% Helper macro for declaring children of supervisor
--define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
+-define(TILE_SUP_CHILD(I, Type, TileData), {I, {I, start_link, [TileData]}, permanent, 5000, Type, [I]}).
 
 %% ===================================================================
 %% API functions
@@ -23,5 +23,4 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [?CHILD(game_sup, supervisor)]} }.
-
+    {ok, { {one_for_all, 5, 10}, [?TILE_SUP_CHILD(tiles_sup, supervisor, TileData)]} }.
