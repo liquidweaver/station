@@ -2,24 +2,24 @@
 
 -behaviour(supervisor).
 
--export([start_link/0]).
+-export([start_link/1]).
 
 -export([init/1]).
 
--export([add_child/2]).
+-export([add_child/3]).
 
 %% Helper macro for declaring children of supervisor
--define(CHILD(Identifier, Module, Type, Coords), {Identifier, {Module, start_link, [Coords]}, permanent, 5000, Type, [Module]}).
+-define(CHILD(Identifier, Module, Type, Objects), {Identifier, {Module, start_link, [Objects]}, permanent, 5000, Type, [Module]}).
 
-start_link() ->
-  supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+start_link(GameMap) when is_list(GameMap) ->
+  supervisor:start_link({local, ?MODULE}, ?MODULE, GameMap).
 
-init([]) ->
-  Tiles = [ case X =:= Y of
-              true -> ?CHILD( {X,Y}, tile, worker, {X,Y,[o_floor:new({X,Y},#{}), o_door:new({X,Y},#{ status => closed }) ]} );
-              false -> ?CHILD( {X,Y}, tile, worker, {X,Y,[o_floor:new({X,Y},#{})]} )
-            end || X <- lists:seq(0,29), Y <- lists:seq(0,29) ],
+init(GameMap) ->
+  Tiles = [ ?CHILD( {X,Y}, tile, worker,
+                {X,Y, [ Type:new( {X,Y}, State) || {Type, State} <- Objects ] }
+            )
+            || {{X,Y}, Objects} <- GameMap],
   {ok, { {one_for_one, 5, 10}, Tiles} }.
 
-add_child(X,Y) ->
-  supervisor:start_child( ?MODULE, ?CHILD( {X,Y}, tile, worker, {X,Y} ) ).
+add_child(X,Y, Objects) ->
+  supervisor:start_child( ?MODULE, ?CHILD( {X,Y}, tile, worker, {X,Y, Objects} ) ).
