@@ -16,3 +16,9 @@ handle_call_remove_object_removes_object_from_contents_test() ->
   Actual = tile:handle_call( {remove_object, object2}, ignored, State ),
 
   ?assertMatch( {_, _, #{ contents := [object1] } }, Actual ).
+
+handle_cast_remove_tile_subscription_removes_supplied_pid_from_tile_subscribers_test() ->
+  State = #{ tile_subscribers => sets:from_list( [ somepid, otherpid ] ) },
+  Expected = sets:from_list([otherpid]),
+  {noreply, #{ tile_subscribers := Actual } } = tile:handle_cast( { remove_tile_subscription, somepid }, State ),
+  ?assertEqual( Expected, Actual ).

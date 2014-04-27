@@ -1,7 +1,7 @@
 -module(tile).
 -export([start_link/1]).
 
--export([sprites/1, add_object/2, move_object/3, accept_object/3, remove_object/2, notify_update/1]).
+-export([sprites/1, add_object/2, move_object/3, accept_object/3, remove_object/2, notify_update/1, remove_tile_subscription/2]).
 
 -export([coords_to_pid/1]).
 
@@ -44,6 +44,10 @@ remove_object( Coords, Object ) ->
 -spec notify_update( tuple() ) -> ok.
 notify_update( Coords ) ->
   gen_server:cast( coords_to_pid(Coords), contents_changed ).
+
+-spec remove_tile_subscription( tuple(), pid() ) -> ok.
+remove_tile_subscription( Coords, Pid ) ->
+  gen_server:cast( coords_to_pid(Coords), {remove_tile_subscription, Pid} ).
 
 start_link(Args = {X,Y}) ->
   gen_server:start_link({local, coords_to_atom({X,Y})}, ?MODULE, Args, []);
@@ -107,6 +111,9 @@ handle_cast({add_object, Object}, State=#{ contents := Contents } ) ->
 handle_cast( contents_changed, State) ->
   send_sprites_to_subscribers( State ),
   {noreply, State};
+
+handle_cast( {remove_tile_subscription, Pid }, State = #{ tile_subscribers := Subscribers } ) ->
+  {noreply, State#{ tile_subscribers => sets:del_element( Pid, Subscribers) }};
 
 %% @private
 handle_cast(_Msg, State) ->

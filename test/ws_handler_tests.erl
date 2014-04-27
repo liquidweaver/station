@@ -45,13 +45,17 @@ websocket_info_need_login_should_send_login_request_test() ->
 websocket_info_tile_data_should_return_tile_data_test() ->
   SpriteData = #{ type => o_space, bank => space, state => 0},
   Expected = map_codec:encode( #{tile_data => #{ <<"0,0">> => SpriteData} } ),
-  State = #{ known_tiles => sets:from_list( [ {0,0} ]) },
+  State = #{ known_tiles => [ {0,0} ] },
   {reply, {text, Actual}, ignored, State} = ws_handler:websocket_info( {tile_data, {0,0}, SpriteData }, ignored, State ),
   ?assertEqual( Expected, Actual ).
 
-websocket_info_tile_data_should_return_ok_when_not_in_known_tiles_test() ->
+websocket_info_tile_data_should_return_ok_and_call_tile_remove_tile_subscription_when_not_in_known_tiles_test() ->
+  meck:new( tile ),
+  meck:expect( tile, remove_tile_subscription, 2, ok ),
   SpriteData = #{ type => o_space, bank => space, state => 0},
-  State = #{ known_tiles => sets:new() },
+  State = #{ known_tiles => [] },
   Expected = {ok, ignored, State},
   Actual = ws_handler:websocket_info( {tile_data, {0,0}, SpriteData }, ignored, State ),
-  ?assertEqual( Expected, Actual ).
+  ?assertEqual( Expected, Actual ),
+  ?assert( meck:called( tile, remove_tile_subscription, [ {0,0}, '_' ])), %match any for pid
+  meck:unload( tile ).
