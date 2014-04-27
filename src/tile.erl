@@ -70,12 +70,17 @@ handle_call( {move_object, Object, To}, _From, State = #{ contents := Contents, 
   % XXX check of object in contents
 
   case tile:accept_object( {X,Y}, To, Object ) of
-    {ok, MovedObject}  -> {reply, {ok, MovedObject}, State#{ contents => Contents -- [Object] } };
+    {ok, MovedObject}  ->
+      NewContentsState = State#{ contents => Contents -- [Object] },
+      send_sprites_to_subscribers( NewContentsState ),
+      {reply, {ok, MovedObject}, NewContentsState};
     {error, Reason} -> {reply, {error, Reason}, State }
   end;
 
 handle_call( {remove_object, Object}, _From, State = #{ contents := Contents } ) ->
-  {reply, ok, State#{ contents => Contents -- [Object] } };
+  NewState = State#{ contents => Contents -- [Object] },
+  send_sprites_to_subscribers( NewState ),
+  {reply, ok, NewState };
 
 handle_call( {accept_object, From, ProposedObject = #{ type := ObjectType }}, _From, State = #{ contents := Contents, x := X, y := Y } ) ->
   case lists:mapfoldl( fun( TestObject = #{ type := Type}, BlockedSoFar ) ->
@@ -85,7 +90,9 @@ handle_call( {accept_object, From, ProposedObject = #{ type := ObjectType }}, _F
     {Contents1, true}  -> {reply, {error, blocked}, State#{ contents := Contents1 } };
     {Contents1, false} ->
       MovedObject = ObjectType:moved( {From, {X,Y}}, ProposedObject ),
-      {reply, {ok, MovedObject}, State#{ contents => Contents1 ++ [MovedObject] } }
+      NewState = State#{ contents => Contents1 ++ [MovedObject] },
+      send_sprites_to_subscribers( NewState ),
+      {reply, {ok, MovedObject}, NewState }
   end;
 
 %% @private
@@ -94,19 +101,11 @@ handle_call(_Request, _From, State) ->
 
 handle_cast({add_object, Object}, State=#{ contents := Contents } ) ->
   NewState = State#{ contents => Contents ++ [Object] },
+  send_sprites_to_subscribers( NewState ),
   {noreply, NewState};
 
-handle_cast( contents_changed, State = #{ contents := Contents, tile_subscribers := Subscribers, x := X, y := Y }) ->
-  case sets:size( Subscribers ) of
-    0 -> noop;
-    _ ->
-      Sprites =  [Type:sprite( Object ) || Object = #{ type := Type } <- Contents ],
-      sets:fold(  fun(Subscriber, _) ->
-                      %gen_server:cast( Subscriber, {tile_data, {X,Y}, Sprites} )
-                      %%% XXX
-                      Subscriber ! {tile_data, {X,Y}, Sprites }
-                    end,ignore,Subscribers)
-  end,
+handle_cast( contents_changed, State) ->
+  send_sprites_to_subscribers( State ),
   {noreply, State};
 
 %% @private
@@ -130,3 +129,15 @@ coords_to_atom(Coords) ->
 
 coords_to_pid(Coords) ->
   whereis( coords_to_atom(Coords) ).
+
+send_sprites_to_subscribers( #{ contents := Contents, tile_subscribers := Subscribers, x := X, y := Y } ) ->
+   case sets:size( Subscribers ) of
+    0 -> noop;
+    _ ->
+      Sprites =  [Type:sprite( Object ) || Object = #{ type := Type } <- Contents ],
+      sets:fold(  fun(Subscriber, _) ->
+                      %gen_server:cast( Subscriber, {tile_data, {X,Y}, Sprites} )
+                      %%% XXX
+                      Subscriber ! {tile_data, {X,Y}, Sprites }
+                    end,ignore,Subscribers)
+  end.

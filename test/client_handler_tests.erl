@@ -14,7 +14,7 @@ request_when_no_user_and_username_sent_should_set_username_test() ->
   meck:new( tile, [pass_through]),
   meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
   meck:expect( tile, add_object, 2, ok),
-  State = #{},
+  State = #{known_tiles => []},
   Expected = <<"bob">>,
   {_,
     #{ username := Actual, player_object := #{ type := o_player, name := Actual } }
@@ -28,7 +28,7 @@ request_when_new_login_should_send_tile_data_world_pos_test()->
   meck:new( tile, [pass_through]),
   meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
   meck:expect( tile, add_object, 2, ok),
-  State = #{},
+  State = #{ known_tiles => [] },
   Expected = <<"bob">>,
   {Actual, _ } = client_handler:request(<<"username">>, Expected, State),
   ?assertMatch( #{tile_data := _, world_pos := _ }, Actual ),
@@ -49,10 +49,12 @@ request_when_username_empty_should_send_error_test() ->
 request_when_send_tiles_should_delegate_call_to_tiles_sprites_test() ->
   meck:new( tile ),
   meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
-  State = #{ x => 7, y => 7, username => ignored },
+  State = #{ x => 7, y => 7, username => ignored, known_tiles => [] },
   client_handler:request(<<"send_tiles">>, <<>>, State),
   ?assert( meck:validate( tile ) ),
   meck:unload(tile).
+
+
 
 request_move_intent_test_() ->
   {foreach,
@@ -66,7 +68,7 @@ request_move_intent_test_() ->
     fun() ->
       meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
       meck:expect( tile, move_object, 3, {ok, newplayerobject1} ),
-      State = #{ x => 7, y => 7, username => ignore, player_object => ignored },
+      State = #{ x => 7, y => 7, username => ignore, player_object => ignored, known_tiles => [] },
       Actual = client_handler:request( <<"move_intent">>, <<"right">>, State ),
       ?assertMatch( {_,#{ x :=8 }}, Actual )
     end},
@@ -75,7 +77,7 @@ request_move_intent_test_() ->
   fun() ->
     meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
     meck:expect( tile, move_object, 3, {ok, newplayerobject1} ),
-    State = #{ x => 7, y => 7, username => ignore, player_object => ignored },
+    State = #{ x => 7, y => 7, username => ignore, player_object => ignored, known_tiles => [] },
     Actual = client_handler:request( <<"move_intent">>, <<"left">>, State ),
     ?assertMatch( {_,#{ x := 6 }}, Actual )
   end},
@@ -84,7 +86,7 @@ request_move_intent_test_() ->
   fun() ->
     meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
     meck:expect( tile, move_object, 3, {ok, newplayerobject1} ),
-    State = #{ x => 7, y => 7, username => ignore, player_object => ignored },
+    State = #{ x => 7, y => 7, username => ignore, player_object => ignored, known_tiles => [] },
     Actual = client_handler:request( <<"move_intent">>, <<"down">>, State ),
     ?assertMatch( {_, #{ y := 8 }}, Actual )
   end},
@@ -93,7 +95,7 @@ request_move_intent_test_() ->
   fun() ->
     meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
     meck:expect( tile, move_object, 3, {ok, newplayerobject1} ),
-    State = #{ x => 7, y => 7, username => ignore, player_object => ignored },
+    State = #{ x => 7, y => 7, username => ignore, player_object => ignored, known_tiles => [] },
     Actual = client_handler:request( <<"move_intent">>, <<"up">>, State ),
     ?assertMatch( {_,#{ y := 6 }}, Actual )
   end},
@@ -103,7 +105,7 @@ request_move_intent_test_() ->
     meck:expect( tile, sprites, 1, [{object_id1, bank1, state1}] ),
     meck:expect( tile, move_object, 3, {error, blocked} ),
 
-    State = #{ x => 7, y => 7, username => ignore, player_object => ignored },
+    State = #{ x => 7, y => 7, username => ignore, player_object => ignored, known_tiles => [] },
     Result = client_handler:request( <<"move_intent">>, <<"up">>, State ),
     ?assert( meck:validate( tile ) ),
     ?assertMatch( {_, #{ x:=7, y:=7 } }, Result )
