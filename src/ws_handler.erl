@@ -26,10 +26,15 @@ websocket_handle({text, Msg}, Req, State) ->
 websocket_handle(_Data, Req, State) ->
   {ok, Req, State}.
 
-websocket_info({tile_data, {TileX,TileY}, Sprites }, Req, State ) ->
-  CoordsBin = <<(integer_to_binary(TileX))/binary,",",(integer_to_binary(TileY))/binary >>,
-  Reply = map_codec:encode( #{tile_data => maps:put( CoordsBin, Sprites, #{}) }),
-  {reply, {text, Reply}, Req, State};
+websocket_info({tile_data, Coords = {TileX,TileY}, Sprites }, Req, State = #{ known_tiles := KnownTiles }) ->
+  case sets:is_element( Coords, KnownTiles ) of
+    true ->
+      CoordsBin = <<(integer_to_binary(TileX))/binary,",",(integer_to_binary(TileY))/binary >>,
+      Reply = map_codec:encode( #{tile_data => maps:put( CoordsBin, Sprites, #{}) }),
+      {reply, {text, Reply}, Req, State};
+    false ->
+      {ok, Req, State}
+  end;
 
 websocket_info(need_login, Req, State) ->
   {reply, {text, map_codec:encode(#{ need_login => <<"Please pass your username.">> } )}, Req, State}.
