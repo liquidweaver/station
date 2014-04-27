@@ -3,7 +3,7 @@
 -behaviour(supervisor).
 
 %% API
--export([start_link/0]).
+-export([start_link/1]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -15,12 +15,14 @@
 %% API functions
 %% ===================================================================
 
-start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+start_link(MapFile) ->
+    supervisor:start_link({local, ?MODULE}, ?MODULE, MapFile ).
 
 %% ===================================================================
 %% Supervisor callbacks
 %% ===================================================================
 
-init([]) ->
+init(MapFile) ->
+    {ok, [TileData]} = file:consult(MapFile),
+    error_logger:info_report( [{ mapfile, MapFile }, { tiles, length(TileData) }] ),
     {ok, { {one_for_all, 5, 10}, [?TILE_SUP_CHILD(tiles_sup, supervisor, TileData)]} }.

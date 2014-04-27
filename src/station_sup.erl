@@ -9,7 +9,7 @@
 -export([init/1]).
 
 %% Helper macro for declaring children of supervisor
--define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
+-define(CHILD(I, Type, MapFile), {I, {I, start_link, [MapFile]}, permanent, 5000, Type, [I]}).
 
 %% ===================================================================
 %% API functions
@@ -23,5 +23,5 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [?CHILD(game_sup, supervisor)]} }.
+    {ok, { {one_for_one, 5, 10}, [?CHILD(game_sup, supervisor, code:priv_dir( station ) ++ "/test.map")]} }.
 
