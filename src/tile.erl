@@ -1,7 +1,7 @@
 -module(tile).
 -export([start_link/1]).
 
--export([sprites/1, add_object/2, move_object/3, accept_object/3, remove_object/2]).
+-export([sprites/1, add_object/2, move_object/3, accept_object/3, remove_object/2, notify_update/1]).
 
 -export([coords_to_pid/1]).
 
@@ -41,6 +41,10 @@ remove_object( Coords, Object ) ->
     Pid       -> gen_server:call( Pid, {remove_object, Object} )
   end.
 
+-spec notify_update( tuple() ) -> ok.
+notify_update( Coords ) ->
+  gen_server:cast( coords_to_pid(Coords), contents_changed ).
+
 start_link(Args = {X,Y}) ->
   gen_server:start_link({local, coords_to_atom({X,Y})}, ?MODULE, Args, []);
 
@@ -49,7 +53,7 @@ start_link(Args = {X,Y, _Contents}) ->
 
 %% @private
 init({X,Y, Contents} ) ->
-  {ok, #{ x => X, y => Y, contents => Contents }};
+  {ok, #{ x => X, y => Y, contents => Contents, tile_subscribers => sets:new()  }};
 
 init({X,Y}) ->
   {ok, #{ x => X, y => Y, contents => empty }}.
@@ -57,9 +61,10 @@ init({X,Y}) ->
 handle_call(get_contents, _From, State=#{ contents := Contents }) ->
   {reply, Contents, State };
 
-handle_call(sprites, {FromPid, _}, State = #{ contents := Contents }) ->
-  Sprites =  [Type:sprite( FromPid, Object ) || Object = #{ type := Type } <- Contents ],
-  {reply, Sprites, State };
+handle_call(sprites, {FromPid, _}, State = #{ contents := Contents, tile_subscribers := Subscribers }) ->
+  Sprites =  [Type:sprite( Object ) || Object = #{ type := Type } <- Contents ],
+
+  {reply, Sprites, State#{ tile_subscribers => sets:add_element( FromPid, Subscribers ) } };
 
 handle_call( {move_object, Object, To}, _From, State = #{ contents := Contents, x := X, y := Y } ) ->
   % XXX check of object in contents
@@ -90,6 +95,19 @@ handle_call(_Request, _From, State) ->
 handle_cast({add_object, Object}, State=#{ contents := Contents } ) ->
   NewState = State#{ contents => Contents ++ [Object] },
   {noreply, NewState};
+
+handle_cast( contents_changed, State = #{ contents := Contents, tile_subscribers := Subscribers, x := X, y := Y }) ->
+  case sets:size( Subscribers ) of
+    0 -> noop;
+    _ ->
+      Sprites =  [Type:sprite( Object ) || Object = #{ type := Type } <- Contents ],
+      sets:fold(  fun(Subscriber, ignore) ->
+                      %gen_server:cast( Subscriber, {tile_data, {X,Y}, Sprites} )
+                      %%% XXX
+                      Subscriber ! {tile_data, {X,Y}, Sprites }
+                    end,ignore,Subscribers)
+  end,
+  {noreply, State};
 
 %% @private
 handle_cast(_Msg, State) ->

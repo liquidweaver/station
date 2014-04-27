@@ -31,24 +31,6 @@ Protocol.prototype.handler_world_pos = function( position, should_redraw ) {
   should_redraw = true;
 };
 
-Protocol.prototype.handler_sprite_data = function( sprite_data, should_redraw ) {
-  for ( var coordinate in sprite_data ) {
-    var tile = this.display.tile_data[coordinate];
-
-    for (var i = tile.length - 1; i >= 0; i--) {
-
-      if (tile[i].type == sprite_data[coordinate].type) {
-        tile[i] = sprite_data[coordinate];
-        console.log( 'sprite data for object ' + tile[i].type + ' at ' + coordinate );
-        should_redraw = true;
-        break;
-      }
-
-    } //for
-
-  } //for
-};
-
 Protocol.prototype.handler_error = function( error_msg, should_redraw  ) {
   this.log.log( error_msg );
 };

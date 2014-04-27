@@ -18,7 +18,7 @@ websocket_handle({text, Msg}, Req, State) ->
   {ReplyData, State1} = try jiffy:decode(Msg) of
     {[{ MessageType, Data }]} -> client_handler:request( MessageType, Data, State )
   catch
-    { error, Code } -> { error, Code, State }
+    { error, Code } -> { #{error => Code}, State }
   end,
   Reply = map_codec:encode(ReplyData),
   {reply, {text, Reply}, Req, State1};
@@ -26,10 +26,10 @@ websocket_handle({text, Msg}, Req, State) ->
 websocket_handle(_Data, Req, State) ->
   {ok, Req, State}.
 
-websocket_info({sprite, {TileX, TileY}, SpriteMap }, Req, State) ->
+websocket_info({tile_data, {TileX,TileY}, Sprites }, Req, State ) ->
   CoordsBin = <<(integer_to_binary(TileX))/binary,",",(integer_to_binary(TileY))/binary >>,
-  Reply = map_codec:encode( #{sprite_data => maps:put( CoordsBin, SpriteMap, #{}) }),
-  {reply, {text, Reply}, Req, State };
+  Reply = map_codec:encode( #{tile_data => maps:put( CoordsBin, Sprites, #{}) }),
+  {reply, {text, Reply}, Req, State};
 
 websocket_info(need_login, Req, State) ->
   {reply, {text, map_codec:encode(#{ need_login => <<"Please pass your username.">> } )}, Req, State}.

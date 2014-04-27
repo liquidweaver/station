@@ -1,16 +1,8 @@
-* Each tile is an actor
-* tiles are registered as a tuple representing x,y to pid
-* Actions on the tile
-	transform the tile's state
- 	can create side effects in the form of messages sent to neighboring tiles
- 	an atmospheric example: on pressure change a message indicating new
- 		pressure could be sent to neighboring tiles, giving them an
- 		opportunity to "transfer" pressure to themselves.
- 	client visibility example: a client requests to view a tile. This tile
- 		Sends messages to the neighboring tiles to "show" themselves to the
- 		client. The tile could decide it is opaque and not send itself to the
- 		client (alternatively, the tile could decide that it is opaque and not
- 		retransmit the the "view" message so that walls could be seen)
-		maybe the direction the message is propating in can only diverge once?
-* "Cooperative" actions between tiles must be atomic.
-* Some kind of propogation delay (a game tick interval?) must take place
+* Transform sprite updates to a cast
+* On new connect
+  * request all tiles around player
+* On player move
+  * calculate calculate all new tiles, request those
+* On sprite update
+  * If within currently viewable, pass up to client
+  * If not currently vieweable, cast unsubscribe sender
