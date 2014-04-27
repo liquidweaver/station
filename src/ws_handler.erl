@@ -27,12 +27,13 @@ websocket_handle(_Data, Req, State) ->
   {ok, Req, State}.
 
 websocket_info({tile_data, Coords = {TileX,TileY}, Sprites }, Req, State = #{ known_tiles := KnownTiles }) ->
-  case sets:is_element( Coords, KnownTiles ) of
+  case lists:member( Coords, KnownTiles ) of
     true ->
       CoordsBin = <<(integer_to_binary(TileX))/binary,",",(integer_to_binary(TileY))/binary >>,
       Reply = map_codec:encode( #{tile_data => maps:put( CoordsBin, Sprites, #{}) }),
       {reply, {text, Reply}, Req, State};
     false ->
+      tile:remove_tile_subscription( Coords, self() ),
       {ok, Req, State}
   end;
 
