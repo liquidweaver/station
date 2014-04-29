@@ -20,8 +20,9 @@ Rules.
 {NEWLINE}           : skip_token.
 {WS}+               : skip_token.
 {L}[A-Za-z0-9_]+\s= : S = strip_property(TokenChars, TokenLen ),
-                      {token, {property, TokenLine, list_to_atom(S)}}.
-{L}+                : {token, {word, TokenLine, TokenChars}}.
+                      {token, {property_name, TokenLine, list_to_atom(S)}}.
+null                : {token, {null, TokenLine}}.
+list                : {token, {collection, TokenLine}}.
 
 Erlang code.
 sci_to_float( TokenChars ) ->
