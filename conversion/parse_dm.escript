@@ -45,6 +45,9 @@ in_c_comment( [ $*, $/ | T], Acc ) ->
 in_c_comment( [_|T], Acc ) ->
   in_c_comment( T, Acc ).
 
+in_cpp_comment( [ $/, $* | Rest], Acc ) ->
+  in_c_comment( Rest, Acc );
+
 in_cpp_comment( [ $\n | T], Acc ) ->
   mark_strings_and_remove_comments( T, [ $\n | Acc ]);
 
