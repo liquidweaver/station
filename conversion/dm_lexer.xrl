@@ -1,7 +1,7 @@
 Definitions.
 WS                  = ([\s\t]+)
 NEWLINE             = (\r\n|\n)
-LINECONT            = \\\s*{NEWLINE}
+LINECONT            = \\[\s\t]*{NEWLINE}
 MULTI_CHAR_OPERATOR = &&|\|\||>=|<=|==|!=|<>|<<|>>|<<=|>>=|\+=|-=|\*=|/=|\|=|\^=|&=|%=|\+\+|--|\*\*
 SUPER               = \.\.\(\)
 PREPROC             = #(define|if|elif|ifdef|ifndef|else|endif|include|error|warn|undef)
@@ -99,7 +99,7 @@ pop_indent_level( Level ) ->
 detents_from_indentstack( IndentStack = [H|_], Level, Detents ) when H =< Level ->
   { IndentStack, Detents };
 
-detents_from_indentstack( [], 0, Detents ) ->
+detents_from_indentstack( [], _, Detents ) -> % TODO: _ might need to be 0?
   { [], Detents };
 
 detents_from_indentstack( [H|T], Level, Detents ) when H > Level ->
