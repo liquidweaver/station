@@ -56,8 +56,9 @@ start_link(Args = {X,Y, _Contents}) ->
   gen_server:start_link({local, coords_to_atom({X,Y})}, ?MODULE, Args, []).
 
 %% @private
-init({X,Y, Contents} ) ->
-  {ok, #{ x => X, y => Y, contents => Contents, tile_subscribers => sets:new()  }};
+init({X,Y, Objects} ) ->
+  Contents1 = [ Type:new( {X,Y}, State) || {Type, State} <- Objects ],
+  {ok, #{ x => X, y => Y, contents => Contents1, tile_subscribers => sets:new()  }};
 
 init({X,Y}) ->
   {ok, #{ x => X, y => Y, contents => empty }}.

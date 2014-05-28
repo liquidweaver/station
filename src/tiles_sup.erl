@@ -16,7 +16,7 @@ start_link(GameMap) when is_list(GameMap) ->
 
 init(GameMap) ->
   Tiles = [ ?CHILD( {X,Y}, tile, worker,
-                {X,Y, [ Type:new( {X,Y}, State) || {Type, State} <- Objects ] }
+                {X,Y, Objects }
             )
             || {{X,Y}, Objects} <- GameMap],
   {ok, { {one_for_one, 5, 10}, Tiles} }.
