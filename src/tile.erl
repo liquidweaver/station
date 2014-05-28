@@ -10,9 +10,9 @@
 
 -define(SERVER, ?MODULE).
 
-sprites(Coords) ->
+sprites(Coords = {X, Y}) ->
   case coords_to_pid(Coords) of
-    undefined -> [#{ type => o_space, bank => space, state => 0 }];
+    undefined -> [#{ type => o_space, bank => space, state => erlang:phash( X * Y, 5 ) }];
     Pid       -> gen_server:call( Pid, sprites )
   end.
 
