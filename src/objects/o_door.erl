@@ -2,7 +2,7 @@
 -behavior(b_object).
 -export([ new/2, sprite/1, moved/2, blocks/2]).
 -behavior(gen_server).
--export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
 
 new( Coords, Args ) ->
   {ok, Pid}= start_link( Coords, Args ),
@@ -48,6 +48,8 @@ handle_info( Transition, State ) ->
 
 handle_cast( {coords, Coords}, State ) ->
   {noreply, State#{ coords => Coords } }.
+
+terminate( _Reason, _State ) -> ignored.
 
 transition( To, State = #{ coords := Coords } ) ->
   NextState = case To of
