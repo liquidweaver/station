@@ -23,55 +23,46 @@ start_link( Coords, Args ) ->
   gen_server:start_link(?MODULE, {Coords, Args}, []).
 
 init( { Coords, #{ status := Status } } ) ->
-  {ok, #{ status => Status, coords => Coords}}.
+  {ok, #{ status => Status, coords => Coords, state_start => game_time:timestamp() }}.
 
 handle_call( sprite, _From, State ) ->
-  SpriteMap = state_to_sprite( State ),
+  SpriteMap = status_to_sprite( State ),
   {reply, SpriteMap, State };
 
 handle_call( {blocks, _Other}, _From, State = #{ status := open } ) ->
   {reply, false, State };
 
-handle_call( {blocks, _Other}, _From, State = #{ status := opening } ) ->
-  {reply, true, State };
+handle_call( {blocks, _Other}, _From, State = #{ status := closed } ) -> % bumped
+  {reply, true, transition( opening, State ) };
 
-handle_call( {blocks, _Other}, _From, State = #{ status := closing } ) ->
-  {reply, true, State };
-
-handle_call( {blocks, _Other}, _From, State = #{ status := closed, coords := Coords } ) -> % bumped
-  tile:notify_update( Coords ),
-  timer:send_after( game_time:tick_length(12), open ),
-  {reply, true, State#{ status => opening, state_start => game_time:timestamp() } }.
-
-
-handle_info(open, State = #{ coords := Coords }) ->
-  tile:notify_update( Coords ),
-  timer:send_after( 7000, closing ),
-  {noreply, State#{ status => open } };
-
-handle_info(closing, State = #{ coords := Coords }) ->
-  tile:notify_update( Coords ),
-  timer:send_after( game_time:tick_length(12), closed ),
-  {noreply, State#{ status => closing, state_start => game_time:timestamp() } };
+handle_call( {blocks, _Other}, _From, State) ->
+  {reply, true, State }.
 
 handle_info(closed, State = #{ coords := Coords }) ->
   tile:notify_update( Coords ),
-  {noreply, State#{ status => closed } }.
+  {noreply, State#{ status => closed } };
+
+handle_info( Transition, State ) ->
+  NewState = transition( Transition, State ),
+  {noreply, NewState }.
 
 handle_cast( {coords, Coords}, State ) ->
-  {noreply, State#{ coords => Coords } };
+  {noreply, State#{ coords => Coords } }.
 
-handle_cast( _Args, State ) ->
-  {noreply, State}.
+transition( To, State = #{ coords := Coords } ) ->
+  NextState = case To of
+    opening -> open;
+    open    -> closing;
+    closing -> closed
+  end,
+  tile:notify_update( Coords ),
+  timer:send_after( game_time:tick_length(12), NextState ),
+  State#{ status => To, state_start => game_time:timestamp() }.
 
-state_to_sprite( #{ status := closed } ) ->
-  #{ type => ?MODULE, bank => 'Door1', state => door1 };
+status_to_sprite( #{ status := Status, state_start := Start } ) ->
+  #{ type => ?MODULE, bank => 'Door1', state => sprite_state(Status), start => Start }.
 
-state_to_sprite( #{ status := open } ) ->
-  #{ type => ?MODULE, bank => 'Door1', state => door0 };
-
-state_to_sprite( #{ status := opening, state_start := Start  } ) ->
-  #{ type => ?MODULE, bank => 'Door1', state => doorc0, start => Start };
-
-state_to_sprite( #{ status := closing, state_start := Start  }) ->
-  #{ type => ?MODULE, bank => 'Door1', state => doorc1, start => Start }.
+sprite_state( closed )  -> door1;
+sprite_state( open )    -> door0;
+sprite_state( opening ) -> doorc0;
+sprite_state( closing ) -> doorc1.
