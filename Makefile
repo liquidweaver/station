@@ -3,18 +3,21 @@ BEHAVIORS := $(patsubst %.erl,%.beam,$(wildcard behaviors/*.erl))
 SPRITES := $(patsubst %.dmi,%.meta,$(wildcard web/sprites/*.dmi))
 DEPSOLVER_PLT=.dialyzer_plt
 all: compile $(SPRITES)
-update_deps:
-	@$(REBAR) update-deps
-compile: update_deps $(BEHAVIORS)
+deps:
+	@$(REBAR) get-deps
 	@$(REBAR) compile
+compile: deps $(BEHAVIORS)
+	@$(REBAR) compile skip_deps=true
 tests:
 	@$(REBAR) skip_deps=true eunit
 clean:
 	@$(REBAR) skip_deps=true clean
+update_deps:
+	@$(REBAR) update-deps
 generate:
 	@cd rel && rebar generate
-start: compile generate
-	rel/station/bin/station console
+start: compile
+	erl -pa ebin deps/*/ebin -eval "application:ensure_all_started(station)."
 
 %.beam : %.erl $(DEPSOLVER_PLT)
 	erlc +debug_info -o behaviors $<
