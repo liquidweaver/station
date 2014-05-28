@@ -5,8 +5,8 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
 
 new( Coords, Args ) ->
-  {ok, Pid}= start_link( Coords, Args ),
-  #{ type => ?MODULE, pid => Pid }.
+  {ok, Pid, Ref } = start( Coords, Args ),
+  #{ type => ?MODULE, pid => Pid, monitor_ref => Ref }.
 
 sprite( #{ pid := Pid } ) ->
   gen_server:call( Pid, sprite ).
@@ -19,8 +19,9 @@ blocks(Other, ObjectState = #{ pid := Pid }) ->
   Block = gen_server:call( Pid, {blocks, Other} ),
   {Block, ObjectState}.
 
-start_link( Coords, Args ) ->
-  gen_server:start_link(?MODULE, {Coords, Args}, []).
+start( Coords, Args ) ->
+  {ok, Pid} = gen_server:start(?MODULE, {Coords, Args}, []),
+  {ok, Pid, monitor( process, Pid )}.
 
 init( { Coords, #{ status := Status } } ) ->
   {ok, #{ status => Status, coords => Coords, state_start => game_time:timestamp() }}.

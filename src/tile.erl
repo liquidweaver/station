@@ -75,7 +75,7 @@ handle_call( {move_object, Object, To}, _From, State = #{ contents := Contents, 
   % XXX check of object in contents
 
   case tile:accept_object( {X,Y}, To, Object ) of
-    {ok, MovedObject}  ->
+    {ok, MovedObject}  -> % TODO: demonitor actor if applicable
       NewContentsState = State#{ contents => Contents -- [Object] },
       send_sprites_to_subscribers( NewContentsState ),
       {reply, {ok, MovedObject}, NewContentsState};
@@ -93,7 +93,7 @@ handle_call( {accept_object, From, ProposedObject = #{ type := ObjectType }}, _F
                     {NewObjectState, BlockedSoFar or Block}
                   end, false, Contents ) of % We update contents in case things are 'bumped'
     {Contents1, true}  -> {reply, {error, blocked}, State#{ contents := Contents1 } };
-    {Contents1, false} ->
+    {Contents1, false} -> % TODO: Monitor actor if applicable
       MovedObject = ObjectType:moved( {From, {X,Y}}, ProposedObject ),
       NewState = State#{ contents => Contents1 ++ [MovedObject] },
       send_sprites_to_subscribers( NewState ),
@@ -121,12 +121,20 @@ handle_cast(_Msg, State) ->
   {noreply, State}.
 
 %% @private
+handle_info( {'DOWN', Ref, process, Pid, _Reason}, State = #{ contents := Contents } ) ->
+  NewContents = lists:filter( fun
+        (#{ pid := P, monitor_ref := R }) when P =:= Pid andalso R =:= Ref -> false;
+        (_) -> true
+      end, Contents ),
+  NewState = State#{ contents => NewContents },
+  send_sprites_to_subscribers( NewState ), % TODO: Inform subscribers of an "anomoly"
+  {noreply, NewState };
+
 handle_info(_Info, State) ->
   {noreply, State}.
 
 %% @private
-terminate(_Reason, _State) ->
-  ok.
+terminate( _Reason, _State ) -> ignored.
 
 %% @private
 code_change(_OldVsn, State, _Extra) ->
