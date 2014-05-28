@@ -16,12 +16,16 @@
 %% ===================================================================
 
 start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+  supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 %% ===================================================================
 %% Supervisor callbacks
 %% ===================================================================
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [?CHILD(game_sup, supervisor, code:priv_dir( station ) ++ "/test.map")]} }.
+  PrivPath = case code:priv_dir( station ) of
+      {error, bad_name} -> "priv";
+      Path -> Path
+  end,
+  {ok, { {one_for_one, 5, 10}, [?CHILD(game_sup, supervisor, PrivPath ++ "/test.map")]} }.
 
