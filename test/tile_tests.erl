@@ -1,10 +1,6 @@
 -module(tile_tests).
 -include_lib("eunit/include/eunit.hrl").
 
-init_passed_contents_sets_contents_in_state_test() ->
-  Actual = tile:init( {x,y,contents1} ),
-  ?assertMatch( {ok, #{ contents := contents1 } } , Actual).
-
 handle_cast_add_object_pushes_new_object_onto_contents_test() ->
   Expected = [old_object, new_object],
   State = #{ contents => [old_object], tile_subscribers => sets:new(), x => ignored, y => ignored },
