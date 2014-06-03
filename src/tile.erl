@@ -116,11 +116,8 @@ handle_cast( contents_changed, State) ->
 handle_cast( {remove_tile_subscription, Pid }, State = #{ tile_subscribers := Subscribers } ) ->
   {noreply, State#{ tile_subscribers => sets:del_element( Pid, Subscribers) }};
 
-%% @private
-handle_cast(_Msg, State) ->
-  {noreply, State}.
+handle_cast(_Msg, State) -> {noreply, State}.
 
-%% @private
 handle_info( {'DOWN', Ref, process, Pid, _Reason}, State = #{ contents := Contents } ) ->
   NewContents = lists:filter( fun
         (#{ pid := P, monitor_ref := R }) when P =:= Pid andalso R =:= Ref -> false;
@@ -133,13 +130,11 @@ handle_info( {'DOWN', Ref, process, Pid, _Reason}, State = #{ contents := Conten
 handle_info(_Info, State) ->
   {noreply, State}.
 
-%% @private
 terminate( _Reason, _State ) -> ignored.
 
-%% @private
-code_change(_OldVsn, State, _Extra) ->
-  {ok, State}.
+code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
+% Private
 coords_to_atom(Coords) ->
   binary_to_atom(term_to_binary(Coords), latin1).
 
