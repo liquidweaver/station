@@ -1,3 +1,4 @@
+.PHONY : all deps compile tests clean update_deps generate start dialyzer
 REBAR=`which rebar`
 BEHAVIORS := $(patsubst %.erl,%.beam,$(wildcard behaviors/*.erl))
 SPRITES := $(patsubst %.dmi,%.meta,$(wildcard web/sprites/*.dmi))
