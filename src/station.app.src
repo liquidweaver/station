@@ -8,5 +8,5 @@
                   cowboy
                  ]},
   {mod, {station_app, []}},
-  {env, []}
+  {env, [ { listen_port, 9001 } ]}
  ]}.

@@ -15,8 +15,9 @@ start(_StartType, _StartArgs) ->
         {'_', [{'_', ws_handler, []}]}
     ]),
     %% Name, NbAcceptors, TransOpts, ProtoOpts
-    cowboy:start_http(http_listener, 100,
-        [{port, 9001}],
+    {ok, ListenPort} = application:get_env( listen_port ),
+    {ok, _Pid} = cowboy:start_http(http_listener, 100,
+        [{port, ListenPort}],
         [{env, [{dispatch, Dispatch}]}]
     ),
     station_sup:start_link().
