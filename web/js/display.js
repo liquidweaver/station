@@ -84,7 +84,6 @@ Display.prototype.intialize_interface = function() {
   var Pocket2X = Pocket1X + this.tile_width + 5;
   var Pocket2Y = LeftHandY;
 
-
   var elements = [
     {sprite: { bank: "screen1_Midnight", state: "id"}, x: IdX, y: IdY, id: 0 },
     {sprite: { bank: "screen1_Midnight", state: "belt"}, x: BeltX, y: BeltY, id: 1 },
@@ -92,7 +91,7 @@ Display.prototype.intialize_interface = function() {
     {sprite: { bank: "screen1_Midnight", state: "act_equip"}, x: RSwapX, y: RSwapY, id: 3 },
     {sprite: { bank: "screen1_Midnight", state: "hand1"}, x: RSwapX, y: RSwapY, id: 4 },
     {sprite: { bank: "screen1_Midnight", state: "hand2"}, x: LSwapX, y: LSwapY, id: 5 },
-    {sprite: { bank: "screen1_Midnight", state: "hand_inactive", direction: "north" }, x: RightHandX, y: RightHandY, id: 6 },
+    {sprite: { bank: "screen1_Midnight", state: "hand_active", direction: "north" }, x: RightHandX, y: RightHandY, id: 6 },
     {sprite: { bank: "screen1_Midnight", state: "hand_inactive", direction: "south" }, x: LeftHandX, y: LeftHandY, id: 7},
     {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket1X, y: Pocket1Y, id: 8 },
     {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket2X, y: Pocket2Y, id: 9 }
@@ -102,22 +101,22 @@ Display.prototype.intialize_interface = function() {
 };
 
 //interface_id must be 0 <= id <= 255
-Display.prototype.add_interface_element = function( sprite, id, x, y ) {
+Display.prototype.add_interface_element = function( element ) {
 
-  imageDetails = this.get_sprite_image_bank_details( sprite );
+  imageDetails = this.get_sprite_image_bank_details( element.sprite );
   var elementCanvas = document.createElement("canvas");
   var elemCtx = elementCanvas.getContext("2d");
   elementCanvas.width = imageDetails.width;
   elementCanvas.height = imageDetails.height;
 
-  this.draw_sprite( sprite, x, y, this.interfaceBufferCtx );
-  this.draw_sprite( sprite, 0, 0, elemCtx);
+  this.draw_sprite( element.sprite, element.x, element.y, this.interfaceBufferCtx );
+  this.draw_sprite( element.sprite, 0, 0, elemCtx);
   var imageData = elemCtx.getImageData( 0, 0, elementCanvas.width, elementCanvas.height );
   var pixelArray = imageData.data;
   for ( var pxl = 0; pxl < pixelArray.length / 4; pxl++ ) {
     var index = 4 * pxl;
     if ( pixelArray[ index + 3 ] > 0 ) { //visible
-      pixelArray[index] = id;
+      pixelArray[index] = element.id;
       pixelArray[index+3] = 255; //We don't want transparency messing with the id
     }
   }
@@ -133,7 +132,7 @@ Display.prototype.add_interface_element = function( sprite, id, x, y ) {
   //so that we can immediatly use that as a source for drawImage
   //because drawImage doesn't support a context as a source
   keyedCtx.putImageData( imageData, 0, 0 );
-  this.interfaceHitBufferCtx.drawImage( keyedElementCanvas, x, y);
+  this.interfaceHitBufferCtx.drawImage( keyedElementCanvas, element.x, element.y);
 };
 
 Display.prototype.load_interface_elements = function( elements ) {
@@ -142,7 +141,7 @@ Display.prototype.load_interface_elements = function( elements ) {
   for( var i = 0; i < elements.length; i ++ ) {
     var element = elements[i];
 
-    this.add_interface_element( element.sprite, element.id, element.x, element.y );
+    this.add_interface_element( element );
   }
 
   this.interface_elements = elements;
