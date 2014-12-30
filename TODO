@@ -1,0 +1,2 @@
+Need to link/unlink object actors when moved.
+Subscribers to tiles need to handle when a tile crashes.
