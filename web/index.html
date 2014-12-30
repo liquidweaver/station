@@ -69,9 +69,11 @@
       $("#main_canvas").click( function( e ) {
         var detected = $.globals.Display.hit_detect( e );
         if ( typeof detected.interface_id != 'undefined' ) {
+          $.globals.Protocol.send_message( "interface_clicked", detected );
           $.globals.Log.log( "Interface clicked, id=" + detected.interface_id );
         }
         else {
+          $.globals.Protocol.send_message( "tile_clicked", detected );
           $.globals.Log.log( "Clicked on: " + detected.type + " at {" + detected.tile_x + ',' + detected.tile_y + '}' );
         }
         e.preventDefault();

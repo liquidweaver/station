@@ -46,6 +46,10 @@ Protocol.prototype.handle_tick_length = function( tick_length, should_redraw ) {
   this.display.tick_length = tick_length;
 };
 
+Protocol.prototype.handle_message = function( message, should_redraw ) {
+  this.log.log( message );
+};
+
 Protocol.prototype.send_message = function( msg_type, data ) {
   var obj = {};
   if ( 'undefined' == typeof data) data = '';
@@ -74,7 +78,7 @@ Protocol.prototype.connect_websocket = function( url ) {
 
     for (var msg_type in msg) {
       if (_this['handle_' + msg_type])
-        _this['handle_' + msg_type]( msg[msg_type], should_redraw );
+        _this['handle_' + msg_type]( msg[msg_type], should_redraw ); //TODO: reduce over should_redraw
       else
         console.log( "ERROR - Unknown msg_type: " + msg_type );
     }
