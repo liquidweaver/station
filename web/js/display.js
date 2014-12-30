@@ -111,6 +111,11 @@ Display.prototype.add_interface_element = function( element ) {
 
   this.draw_sprite( element.sprite, element.x, element.y, this.interfaceBufferCtx );
   this.draw_sprite( element.sprite, 0, 0, elemCtx);
+
+  if ( element.contains ) {
+    this.draw_sprite(element.contains.sprite, element.x, element.y, this.interfaceBufferCtx );
+  }
+
   var imageData = elemCtx.getImageData( 0, 0, elementCanvas.width, elementCanvas.height );
   var pixelArray = imageData.data;
   for ( var pxl = 0; pxl < pixelArray.length / 4; pxl++ ) {
