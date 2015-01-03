@@ -20,8 +20,12 @@ websocket_handle({text, Msg}, Req, State) ->
   catch
     { error, Code } -> { #{error => Code}, State }
   end,
-  Reply = map_codec:encode(ReplyData#{ timestamp => game_time:timestamp()}),
-  {reply, {text, Reply}, Req, State1};
+  case ReplyData of
+    noreply -> {ok, Req, State1};
+    Reply ->
+      Reply1 = map_codec:encode(Reply#{ timestamp => game_time:timestamp()}),
+      {reply, {text, Reply1}, Req, State1}
+  end;
 
 websocket_handle(_Data, Req, State) ->
   {ok, Req, State}.

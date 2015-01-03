@@ -38,9 +38,9 @@ request( <<"interface_clicked">>, {Data}, State ) when is_list(Data)->
   InterfaceID = proplists:get_value( <<"interface_id">>, Data ),
   { #{ message => [<<"You clicked interface ">>, integer_to_binary(InterfaceID)]} , State};
 
-request( <<"tile_clicked">>, {Data}, State ) ->
+request( <<"tile_clicked">>, {Data}, State ) when is_list(Data) ->
   Type = proplists:get_value( <<"type">>, Data ),
-  { #{ message => [ <<"You clicked tile of type ">>, Type ]} , State };
+  { noreply, State };
 
 request( Unknown, Data, State) ->
   { #{ unknown_request => [Unknown, Data] }, State }.
