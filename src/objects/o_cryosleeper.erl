@@ -1,9 +1,9 @@
 -module(o_cryosleeper).
 
--export([ new/2, sprite/1, moved/2, blocks/2]).
+-export([ new/2, sprite/1, moved/2, blocks/2, actions/1]).
 
-new(_,_) ->
-  #{ type => ?MODULE, direction => south }.
+new(_,State) ->
+  State#{ direction => south }.
 
 sprite( #{ direction := Direction } ) ->
   #{ type => ?MODULE, bank => cryogenic2, state => sleeper_1, start => 0, direction => Direction }.
@@ -13,3 +13,5 @@ moved({_From, _To}, State ) ->
 
 blocks(_Other, Self) ->
   {true, Self}.
+
+actions(_) -> [].

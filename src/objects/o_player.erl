@@ -1,9 +1,9 @@
 -module(o_player).
 
--export([ new/2, sprite/1, moved/2, blocks/2]).
+-export([ new/2, sprite/1, moved/2, blocks/2, actions/1]).
 
-new( _,#{ name := Name } ) ->
-  #{ type => ?MODULE, direction => south, name => Name }.
+new( _, State ) ->
+  State#{ direction => south, left_hand => empty, right_hand => empty, active_hand => left }.
 
 sprite( #{ direction := Direction } ) ->
   #{ type => ?MODULE, bank => human, state => fatbody_s, direction => Direction}.
@@ -14,6 +14,21 @@ moved( {From, To}, State = #{ direction := OldDirection } ) ->
 
 blocks(_Other, Self) ->
   {true, Self}.
+
+actions( #{ active_hand := left, left_hand := LeftHand } ) ->
+  case LeftHand of
+    empty ->
+      [pickup];
+    Object ->
+      [place]
+  end;
+actions( #{ active_hand := right, right_hand := RightHand } ) ->
+    case RightHand of
+    empty ->
+      [pickup];
+    Object ->
+      [place]
+  end.
 
 direction_from_coords( {OldX, _}, {NewX, _}, _OldDirection ) when NewX > OldX -> east;
 direction_from_coords( {OldX, _}, {NewX, _}, _OldDirection ) when NewX < OldX -> west;

@@ -41,8 +41,20 @@ websocket_info({tile_data, Coords = {TileX,TileY}, Sprites }, Req, State = #{ kn
       {ok, Req, State}
   end;
 
+websocket_info({object_changed, NewPlayerObject = #{ left_hand := LeftHand, right_hand := RightHand, active_hand := ActiveHand } }, Req, State ) ->
+  Reply = map_codec:encode( #{ inventory => #{  left_hand => empty_or_sprite(LeftHand),
+                                                right_hand => empty_or_sprite(RightHand),
+                                                active_hand => ActiveHand} }),
+  { reply, {text, Reply}, Req, State#{ player_object := NewPlayerObject } };
+
+
 websocket_info(need_login, Req, State) ->
   {reply, {text, map_codec:encode(#{ need_login => <<"Please pass your username.">> } )}, Req, State}.
 
 websocket_terminate(_Reason, _Req, State) ->
   client_handler:remove_player_from_world(State).
+
+empty_or_sprite( empty ) ->
+  empty;
+empty_or_sprite( State = #{ type := Type } ) ->
+  Type:sprite( State ).

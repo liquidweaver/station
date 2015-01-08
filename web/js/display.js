@@ -45,6 +45,7 @@ Display.prototype.hit_ctx = undefined;
 Display.prototype.log = undefined;
 Display.prototype.tick_length = 1000;
 Display.prototype.interface_elements = [];
+Display.prototype.inventory = { left_hand: "empty", right_hand: "empty", active_hand: "right" };
 
 Display.prototype.update_canvas = function() {
   this.mainCtx.drawImage( this.frameBuffer, 0, 0 );
@@ -58,6 +59,12 @@ Display.prototype.tick = function() {
 Display.prototype.redraw = function() {
   this.update_framebuffer();
   this.update_canvas();
+};
+
+Display.prototype.update_inventory = function( inventory ) {
+  this.inventory = inventory;
+
+  this.intialize_interface();
 };
 
 Display.prototype.intialize_interface = function() {
@@ -84,18 +91,25 @@ Display.prototype.intialize_interface = function() {
   var Pocket2X = Pocket1X + this.tile_width + 5;
   var Pocket2Y = LeftHandY;
 
-  var elements = [
-    {sprite: { bank: "screen1_Midnight", state: "id"}, x: IdX, y: IdY, id: 0 },
-    {sprite: { bank: "screen1_Midnight", state: "belt"}, x: BeltX, y: BeltY, id: 1 },
-    {sprite: { bank: "screen1_Midnight", state: "back"}, x: BackX, y: BackY, id: 2 },
-    {sprite: { bank: "screen1_Midnight", state: "act_equip"}, x: RSwapX, y: RSwapY, id: 3 },
-    {sprite: { bank: "screen1_Midnight", state: "hand1"}, x: RSwapX, y: RSwapY, id: 4 },
-    {sprite: { bank: "screen1_Midnight", state: "hand2"}, x: LSwapX, y: LSwapY, id: 5 },
-    {sprite: { bank: "screen1_Midnight", state: "hand_active", direction: "north" }, x: RightHandX, y: RightHandY, id: 6 },
-    {sprite: { bank: "screen1_Midnight", state: "hand_inactive", direction: "south" }, x: LeftHandX, y: LeftHandY, id: 7},
-    {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket1X, y: Pocket1Y, id: 8 },
-    {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket2X, y: Pocket2Y, id: 9 }
-  ];
+  var RightHandState = this.inventory.active_hand == "right" ? "hand_active" : "hand_inactive";
+  var LeftHandState = this.inventory.active_hand == "left" ? "hand_active" : "hand_inactive";
+  var LeftHandContents = this.inventory.left_hand == "empty" ? null : { sprite: this.inventory.left_hand };
+  var RightHandContents = this.inventory.right_hand == "empty" ? null : { sprite: this.inventory.right_hand };
+
+
+
+  var elements = {
+    id: {sprite: { bank: "screen1_Midnight", state: "id"}, x: IdX, y: IdY, id: 0 },
+    belt: {sprite: { bank: "screen1_Midnight", state: "belt"}, x: BeltX, y: BeltY, id: 1 },
+    back: {sprite: { bank: "screen1_Midnight", state: "back"}, x: BackX, y: BackY, id: 2 },
+    act_equip: {sprite: { bank: "screen1_Midnight", state: "act_equip"}, x: RSwapX, y: RSwapY, id: 3 },
+    e: {sprite: { bank: "screen1_Midnight", state: "hand1"}, x: RSwapX, y: RSwapY, id: 4 },
+    swap: {sprite: { bank: "screen1_Midnight", state: "hand2"}, x: LSwapX, y: LSwapY, id: 5 },
+    right_hand: {sprite: { bank: "screen1_Midnight", state: RightHandState, direction: "north" }, x: RightHandX, y: RightHandY, id: 6, contains: RightHandContents },
+    left_hand: {sprite: { bank: "screen1_Midnight", state: LeftHandState, direction: "south" }, x: LeftHandX, y: LeftHandY, id: 7, contains: LeftHandContents },
+    left_pocket: {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket1X, y: Pocket1Y, id: 8 },
+    right_pocket: {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket2X, y: Pocket2Y, id: 9 }
+  };
 
   this.load_interface_elements( elements );
 };
@@ -112,7 +126,7 @@ Display.prototype.add_interface_element = function( element ) {
   this.draw_sprite( element.sprite, element.x, element.y, this.interfaceBufferCtx );
   this.draw_sprite( element.sprite, 0, 0, elemCtx);
 
-  if ( element.contains ) {
+  if ( element.contains && element.contains.sprite ) {
     this.draw_sprite(element.contains.sprite, element.x, element.y, this.interfaceBufferCtx );
   }
 
@@ -143,8 +157,8 @@ Display.prototype.add_interface_element = function( element ) {
 Display.prototype.load_interface_elements = function( elements ) {
   this.interfaceHitBufferCtx.clearRect(0,0, this.interfaceHitBuffer.width - 1, this.interfaceHitBuffer.height - 1);
 
-  for( var i = 0; i < elements.length; i ++ ) {
-    var element = elements[i];
+  for( var key in elements ) {
+    var element = elements[key];
 
     this.add_interface_element( element );
   }
@@ -180,8 +194,10 @@ Display.prototype.hit_detect = function(mouse_evt) {
     }
   }
 
-  if ( sprites_hit.length > 0 )
-    return { tile_x: tileCoords.x, tile_y: tileCoords.y, type: sprites_hit.pop().type };
+  if ( sprites_hit.length > 0 ) {
+    var sprite_hit = sprites_hit.pop();
+    return { tile_x: tileCoords.x, tile_y: tileCoords.y, type: sprite_hit.type, ref: sprite_hit.ref };
+  }
   else
     console.log( "Display.hit_detect: nothing was clicked?");
 

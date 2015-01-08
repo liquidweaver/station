@@ -1,7 +1,7 @@
 -module(tile).
 -export([start_link/1]).
 
--export([sprites/1, add_object/2, move_object/3, accept_object/3, remove_object/2, notify_update/1, remove_tile_subscription/2]).
+-export([sprites/1, add_object/2, move_object/3, accept_object/3, remove_object/2, object_state/2, notify_update/1, remove_tile_subscription/2, source_action/5]).
 
 -export([coords_to_pid/1]).
 
@@ -41,6 +41,17 @@ remove_object( Coords, Object ) ->
     Pid       -> gen_server:call( Pid, {remove_object, Object} )
   end.
 
+object_state( Coords, ObjectRef ) ->
+  case coords_to_pid(Coords) of
+    undefined -> {error, no_tile};
+    Pid       -> gen_server:call( Pid, {object_state, ObjectRef} )
+  end.
+
+-spec source_action( tuple(), tuple(), atom(), reference(), reference() ) -> ok.
+source_action( FromTile, TargetTile, Action, Source, TargetRef ) ->
+  { FromTilePid, TargetTilePid } = { coords_to_pid( FromTile ), coords_to_pid( TargetTile ) },
+  gen_server:cast( FromTilePid, {source_action, Action, TargetTilePid, Source, TargetRef } ).
+
 -spec notify_update( tuple() ) -> ok.
 notify_update( Coords ) ->
   gen_server:cast( coords_to_pid(Coords), contents_changed ).
@@ -57,7 +68,8 @@ start_link(Args = {X,Y, _Contents}) ->
 
 %% @private
 init({X,Y, Objects} ) ->
-  Contents1 = [ Type:new( {X,Y}, State) || {Type, State} <- Objects ],
+  Contents1 = [ Type:new( {X,Y}, State#{ ref => objects:create_ref(), type => Type } ) || {Type, State} <- Objects ],
+  % Contents1 = [ Type:new( {X,Y}, State ) || {Type, State} <- Objects ],
   {ok, #{ x => X, y => Y, contents => Contents1, tile_subscribers => sets:new()  }};
 
 init({X,Y}) ->
@@ -67,7 +79,7 @@ handle_call(get_contents, _From, State=#{ contents := Contents }) ->
   {reply, Contents, State };
 
 handle_call(sprites, {FromPid, _}, State = #{ contents := Contents, tile_subscribers := Subscribers }) ->
-  Sprites =  [Type:sprite( Object ) || Object = #{ type := Type } <- Contents ],
+  Sprites =  [ maps:put( ref, Ref, Type:sprite( Object ) ) || Object = #{ type := Type, ref := Ref } <- Contents ],
 
   {reply, Sprites, State#{ tile_subscribers => sets:add_element( FromPid, Subscribers ) } };
 
@@ -100,6 +112,25 @@ handle_call( {accept_object, From, ProposedObject = #{ type := ObjectType }}, _F
       {reply, {ok, MovedObject}, NewState }
   end;
 
+% TODO: Process side effects
+handle_call( {target_action, Action, SourceObject, TargetRef}, _From, State = #{contents := Contents } ) ->
+  TargetObject = objects:object_from_ref( TargetRef, Contents ),
+  ActionModule = binary_to_existing_atom( <<"a_", (atom_to_binary( Action, latin1 ))/binary >>, latin1 ),
+  {NewSourceObject, NewTargetObject, _SideEffects} = ActionModule:do_action( SourceObject, TargetObject ),
+  case TargetObject =:= NewTargetObject of
+    true -> {reply, NewSourceObject, State };
+    false ->
+      Contents1 = update_contents( Contents, TargetObject, NewTargetObject ),
+      NewState = State#{ contents := Contents1 },
+      notify_objects_entity(NewTargetObject),
+      send_sprites_to_subscribers(NewState), % TODO: Compare sprites first with Object:sprite/1
+      {reply, NewSourceObject, NewState }
+  end;
+
+handle_call( {object_state, ObjectRef}, _From, State = #{ contents := Contents } ) ->
+  Object = objects:object_from_ref( ObjectRef, Contents ),
+  {reply, Object, State };
+
 %% @private
 handle_call(_Request, _From, State) ->
   {reply, {error, unknown_call}, State}.
@@ -115,6 +146,19 @@ handle_cast( contents_changed, State) ->
 
 handle_cast( {remove_tile_subscription, Pid }, State = #{ tile_subscribers := Subscribers } ) ->
   {noreply, State#{ tile_subscribers => sets:del_element( Pid, Subscribers) }};
+
+handle_cast( { source_action, Action, TargetTile, SourceRefOrObject, TargetRef }, State = #{ contents := Contents } ) ->
+  SourceObject = objects:object_from_ref( SourceRefOrObject, Contents ),
+  NewSourceObject = gen_server:call( TargetTile, {target_action, Action, SourceObject, TargetRef } ),
+  case SourceObject =:= NewSourceObject of
+    true -> {noreply, State };
+    false ->
+      Contents1 = update_contents( Contents, SourceObject, NewSourceObject ),
+      NewState = State#{ contents := Contents1 },
+      notify_objects_entity(NewSourceObject),
+      send_sprites_to_subscribers(NewState), % TODO: Compare sprites first with Object:sprite/1
+      {noreply, NewState}
+  end;
 
 handle_cast(_Msg, State) -> {noreply, State}.
 
@@ -134,7 +178,6 @@ terminate( _Reason, _State ) -> ignored.
 
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
-% Private
 coords_to_atom(Coords) ->
   binary_to_atom(term_to_binary(Coords), latin1).
 
@@ -146,9 +189,28 @@ send_sprites_to_subscribers( #{ contents := Contents, tile_subscribers := Subscr
     0 -> noop;
     _ ->
       Sprites =  [Type:sprite( Object ) || Object = #{ type := Type } <- Contents ],
-      sets:fold(  fun(Subscriber, _) ->
-                      %gen_server:cast( Subscriber, {tile_data, {X,Y}, Sprites} )
-                      %%% XXX
-                      Subscriber ! {tile_data, {X,Y}, Sprites }
-                    end,ignore,Subscribers)
+      sets:fold(fun(Subscriber, _) ->
+                  %gen_server:cast( Subscriber, {tile_data, {X,Y}, Sprites} )
+                  %%% XXX Need the player to be a proper entity
+                  Subscriber ! {tile_data, {X,Y}, Sprites }
+                end,ignore,Subscribers)
   end.
+
+% TODO delete entity's actor it applicable
+-spec update_contents( [map()], map(), map() | deleted ) -> {boolean(), [map()]}.
+update_contents( Contents, OldObject, deleted ) ->
+  lists:filter( fun( Object ) -> not objects:equal( OldObject, Object ) end, Contents );
+
+update_contents( Contents, _OldObject, NewObject ) ->
+  lists:map( fun (Object) ->
+        case objects:equal(Object, NewObject) of
+          true -> NewObject;
+          false -> Object
+        end
+      end, Contents ).
+
+notify_objects_entity( State = #{ pid := Pid } ) ->
+  %gen_server:cast( Pid, {object_changed, State } ),
+  %%% XXX Need the player to be a proper entity
+  Pid ! {object_changed, State };
+notify_objects_entity( State ) -> noop.

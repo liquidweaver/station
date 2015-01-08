@@ -54,8 +54,6 @@ request_when_send_tiles_should_delegate_call_to_tiles_sprites_test() ->
   ?assert( meck:validate( tile ) ),
   meck:unload(tile).
 
-
-
 request_move_intent_test_() ->
   {foreach,
   fun() ->

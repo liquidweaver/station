@@ -50,6 +50,10 @@ Protocol.prototype.handle_message = function( message, should_redraw ) {
   this.log.log( message );
 };
 
+Protocol.prototype.handle_inventory = function( message, should_redraw ) {
+  this.display.update_inventory( message );
+}
+
 Protocol.prototype.send_message = function( msg_type, data ) {
   var obj = {};
   if ( 'undefined' == typeof data) data = '';

@@ -38,15 +38,27 @@ request( <<"interface_clicked">>, {Data}, State ) when is_list(Data)->
   InterfaceID = proplists:get_value( <<"interface_id">>, Data ),
   { #{ message => [<<"You clicked interface ">>, integer_to_binary(InterfaceID)]} , State};
 
-request( <<"tile_clicked">>, {Data}, State ) when is_list(Data) ->
-  Type = proplists:get_value( <<"type">>, Data ),
-  { noreply, State };
+request( <<"tile_clicked">>, {Data}, State = #{ x := X, y := Y, player_object := PlayerObject } ) when is_list(Data) ->
+  TargetRef = proplists:get_value( <<"ref">>, Data ),
+  Type = binary_to_existing_atom( proplists:get_value( <<"type">>, Data), latin1 ),
+  { TargetX, TargetY } = { proplists:get_value( <<"tile_x">>, Data ), proplists:get_value( <<"tile_y">>, Data ) },
+  TargetObjectStateForActions = tile:object_state( {TargetX, TargetY}, TargetRef ),
+  Action = default_action( PlayerObject, TargetObjectStateForActions ),
+  case Action of
+    nothing -> { #{ message => <<"Nothing to do.">> }, State };
+    Action ->
+      tile:source_action( {X, Y}, { TargetX, TargetY }, Action, PlayerObject, TargetRef ),
+      { noreply, State }
+  end;
 
 request( Unknown, Data, State) ->
   { #{ unknown_request => [Unknown, Data] }, State }.
 
 remove_player_from_world( #{ x := X, y := Y, player_object := PlayerObject } ) ->
-  tile:remove_object( {X, Y}, PlayerObject ).
+  tile:remove_object( {X, Y}, PlayerObject );
+
+remove_player_from_world( #{ username := undefined } ) ->
+  noop.
 
 move_player( OldState = #{ x := OldX, y := OldY }, NewState = #{ x := NewX, y := NewY, player_object := PlayerObject } ) ->
     case tile:move_object( {OldX, OldY}, {NewX, NewY}, PlayerObject ) of
@@ -68,7 +80,7 @@ view(X,Y, KnownTiles, ViewSize) when is_integer(ViewSize) andalso ViewSize rem 2
   {maps:from_list(Sprites), PossibleTiles}.
 
 create_player_object( Coords, Username ) ->
-  o_player:new( Coords, #{name => Username} ).
+  o_player:new( Coords, #{ name => Username, type => o_player, ref => objects:create_ref(), pid => self() } ).
 
 login_player( Username, State ) ->
   PlayerObject = create_player_object({7,7}, Username),
@@ -78,3 +90,14 @@ login_player( Username, State ) ->
 world_pos_and_tiles( State = #{ x := X, y := Y, known_tiles := KnownTiles } ) ->
   {WorldData, NewKnownTiles} = view(X,Y,KnownTiles,15),
   {#{ world_pos => #{ x => X, y => Y}, tile_data => WorldData }, State#{ known_tiles => NewKnownTiles }}.
+
+supported_actions( SourceObject = #{ type := SourceType }, TargetObject = #{ type := TargetType } ) ->
+  { SourceActions, TargetActions } = { SourceType:actions(SourceObject), TargetType:actions(TargetObject) },
+  [I || I <- SourceActions, lists:member(I, TargetActions) ].
+
+default_action( SourceObject, TargetObject ) ->
+  case supported_actions( SourceObject, TargetObject ) of
+    [] -> nothing;
+    Actions -> hd(Actions)
+  end.
+
