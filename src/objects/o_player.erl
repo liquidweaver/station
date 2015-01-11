@@ -19,14 +19,14 @@ actions( #{ active_hand := left, left_hand := LeftHand } ) ->
   case LeftHand of
     empty ->
       [pickup];
-    Object ->
+    _Object ->
       [place]
   end;
 actions( #{ active_hand := right, right_hand := RightHand } ) ->
     case RightHand of
     empty ->
       [pickup];
-    Object ->
+    _Object ->
       [place]
   end.
 
