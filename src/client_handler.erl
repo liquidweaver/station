@@ -4,6 +4,7 @@
 
 -export([remove_player_from_world/1]).
 
+-spec request(binary(), any(), map()) -> tuple().
 request( <<"username">>, Username, State) when is_binary(Username) andalso byte_size(Username) > 0 ->
   LoggedInState = login_player( Username, State ),
   {WorldPosAndTiles, KnownTilesState} = world_pos_and_tiles(LoggedInState),
@@ -40,7 +41,6 @@ request( <<"interface_clicked">>, {Data}, State ) when is_list(Data)->
 
 request( <<"tile_clicked">>, {Data}, State = #{ x := X, y := Y, player_object := PlayerObject } ) when is_list(Data) ->
   TargetRef = proplists:get_value( <<"ref">>, Data ),
-  Type = binary_to_existing_atom( proplists:get_value( <<"type">>, Data), latin1 ),
   { TargetX, TargetY } = { proplists:get_value( <<"tile_x">>, Data ), proplists:get_value( <<"tile_y">>, Data ) },
   TargetObjectStateForActions = tile:object_state( {TargetX, TargetY}, TargetRef ),
   Action = default_action( PlayerObject, TargetObjectStateForActions ),
@@ -79,6 +79,7 @@ view(X,Y, KnownTiles, ViewSize) when is_integer(ViewSize) andalso ViewSize rem 2
     || {TileX, TileY} <- TilesToRequest ],
   {maps:from_list(Sprites), PossibleTiles}.
 
+-spec create_player_object({ integer(), integer() }, any()) -> any().
 create_player_object( Coords, Username ) ->
   o_player:new( Coords, #{ name => Username, type => o_player, ref => objects:create_ref(), pid => self() } ).
 

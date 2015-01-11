@@ -22,6 +22,7 @@ add_object( Coords, Object )  ->
     Pid       -> gen_server:cast( Pid, {add_object, Object} )
   end.
 
+-spec move_object({ non_neg_integer(), non_neg_integer()}, { non_neg_integer(), non_neg_integer()}, Object :: map()) -> undefined | {ok, map()} | { error, atom() }.
 move_object( From, To, Object ) ->
   case coords_to_pid(From) of
     undefined -> {error, no_tile};
@@ -47,7 +48,7 @@ object_state( Coords, ObjectRef ) ->
     Pid       -> gen_server:call( Pid, {object_state, ObjectRef} )
   end.
 
--spec source_action( tuple(), tuple(), atom(), reference(), reference() ) -> ok.
+-spec source_action( tuple(), tuple(), atom(), integer() | map(), integer() | map() ) -> ok.
 source_action( FromTile, TargetTile, Action, Source, TargetRef ) ->
   { FromTilePid, TargetTilePid } = { coords_to_pid( FromTile ), coords_to_pid( TargetTile ) },
   gen_server:cast( FromTilePid, {source_action, Action, TargetTilePid, Source, TargetRef } ).
@@ -197,7 +198,7 @@ send_sprites_to_subscribers( #{ contents := Contents, tile_subscribers := Subscr
   end.
 
 % TODO delete entity's actor it applicable
--spec update_contents( [map()], map(), map() | deleted ) -> {boolean(), [map()]}.
+-spec update_contents( [map()], map(), map() | deleted ) -> [map()].
 update_contents( Contents, OldObject, deleted ) ->
   lists:filter( fun( Object ) -> not objects:equal( OldObject, Object ) end, Contents );
 
@@ -213,4 +214,4 @@ notify_objects_entity( State = #{ pid := Pid } ) ->
   %gen_server:cast( Pid, {object_changed, State } ),
   %%% XXX Need the player to be a proper entity
   Pid ! {object_changed, State };
-notify_objects_entity( State ) -> noop.
+notify_objects_entity( _State ) -> noop.

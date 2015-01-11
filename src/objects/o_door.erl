@@ -1,8 +1,8 @@
 -module(o_door).
--behavior(b_object).
--export([ new/2, sprite/1, moved/2, blocks/2, actions/1]).
 -behavior(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
+-behavior(b_object).
+-export([ new/2, sprite/1, moved/2, blocks/2, actions/1]).
 
 new( Coords, State ) ->
   {ok, Pid, MonRef } = start( Coords, State ),
