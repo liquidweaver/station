@@ -67,6 +67,9 @@ Display.prototype.update_inventory = function( inventory ) {
   this.intialize_interface();
 };
 
+Display.prototype.inventory_id_to_name = function( id ) {
+  return this.elements[id].name;
+}
 Display.prototype.intialize_interface = function() {
 
   //Draw interface
@@ -98,21 +101,24 @@ Display.prototype.intialize_interface = function() {
 
 
   var elements = [
-    {sprite: { bank: "screen1_Midnight", state: "id"}, x: IdX, y: IdY, id: 0 },
-    {sprite: { bank: "screen1_Midnight", state: "belt"}, x: BeltX, y: BeltY, id: 1 },
-    {sprite: { bank: "screen1_Midnight", state: "back"}, x: BackX, y: BackY, id: 2 },
-    {sprite: { bank: "screen1_Midnight", state: "act_equip"}, x: RSwapX, y: RSwapY, id: 3 },
-    {sprite: { bank: "screen1_Midnight", state: "hand1"}, x: RSwapX, y: RSwapY, id: 4 },
-    {sprite: { bank: "screen1_Midnight", state: "hand2"}, x: LSwapX, y: LSwapY, id: 5 },
-    {sprite: { bank: "screen1_Midnight", state: RightHandState, direction: "north" }, x: RightHandX, y: RightHandY, id: 6, contains: RightHandContents },
-    {sprite: { bank: "screen1_Midnight", state: LeftHandState, direction: "south" }, x: LeftHandX, y: LeftHandY, id: 7, contains: LeftHandContents },
-    {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket1X, y: Pocket1Y, id: 8 },
-    {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket2X, y: Pocket2Y, id: 9 }
+    {sprite: { bank: "screen1_Midnight", state: "id"}, x: IdX, y: IdY, id: 0, name: "id" },
+    {sprite: { bank: "screen1_Midnight", state: "belt"}, x: BeltX, y: BeltY, id: 1, name: "belt" },
+    {sprite: { bank: "screen1_Midnight", state: "back"}, x: BackX, y: BackY, id: 2, name: "backpack" },
+    {sprite: { bank: "screen1_Midnight", state: "act_equip"}, x: RSwapX, y: RSwapY, id: 3, name: "swap" },
+    {sprite: { bank: "screen1_Midnight", state: "hand1"}, x: RSwapX, y: RSwapY, id: 4, name: "swap" },
+    {sprite: { bank: "screen1_Midnight", state: "hand2"}, x: LSwapX, y: LSwapY, id: 5, name: "swap" },
+    {sprite: { bank: "screen1_Midnight", state: RightHandState, direction: "north" }, x: RightHandX, y: RightHandY, id: 6, contains: RightHandContents, name: "left_hand" },
+    {sprite: { bank: "screen1_Midnight", state: LeftHandState, direction: "south" }, x: LeftHandX, y: LeftHandY, id: 7, contains: LeftHandContents, name: "right_hand" },
+    {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket1X, y: Pocket1Y, id: 8, name: "left_pocket" },
+    {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket2X, y: Pocket2Y, id: 9, name: "right_pocket" }
   ];
 
   this.load_interface_elements( elements );
 };
 
+Display.prototype.interface_id_to_name = function( id ) {
+  return this.interface_elements[id].name;
+}
 //interface_id must be 0 <= id <= 255
 Display.prototype.add_interface_element = function( element ) {
 
@@ -171,7 +177,7 @@ Display.prototype.hit_detect = function(mouse_evt) {
   //TODO check interface canvas
   var interfaceData = this.interfaceHitBufferCtx.getImageData( canvas_x, canvas_y, 1, 1).data;
   if ( interfaceData[3] > 0 ) {
-    return { interface_id: interfaceData[0] };
+    return { interface_element: this.interface_id_to_name( interfaceData[0] ) };
   }
 
   var tileCoords = this.canvas_coords_to_tile_coords( canvas_x, canvas_y );

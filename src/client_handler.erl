@@ -36,8 +36,8 @@ request( <<"move_intent">>, <<"up">>, State = #{ y := Y} ) ->
   move_player( State, ProposedState );
 
 request( <<"interface_clicked">>, {Data}, State ) when is_list(Data)->
-  InterfaceID = proplists:get_value( <<"interface_id">>, Data ),
-  { #{ message => [<<"You clicked interface ">>, integer_to_binary(InterfaceID)]} , State};
+  InterfaceElement = binary_to_atom( proplists:get_value( <<"interface_element">>, Data ), latin1 ),
+  { #{ message => [<<"You clicked interface element ">>, InterfaceElement]} , State};
 
 request( <<"tile_clicked">>, {Data}, State = #{ x := X, y := Y, player_object := PlayerObject } ) when is_list(Data) ->
   TargetRef = proplists:get_value( <<"ref">>, Data ),

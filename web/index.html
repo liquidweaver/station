@@ -68,9 +68,9 @@
       });
       $("#main_canvas").click( function( e ) {
         var detected = $.globals.Display.hit_detect( e );
-        if ( typeof detected.interface_id != 'undefined' ) {
+        if ( typeof detected.interface_element != 'undefined' ) {
           $.globals.Protocol.send_message( "interface_clicked", detected );
-          $.globals.Log.log( "Interface clicked, id=" + detected.interface_id );
+          $.globals.Log.log( "Interface clicked, element=" + detected.interface_element );
         }
         else {
           $.globals.Protocol.send_message( "tile_clicked", detected );
