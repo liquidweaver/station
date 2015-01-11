@@ -97,19 +97,18 @@ Display.prototype.intialize_interface = function() {
   var RightHandContents = this.inventory.right_hand == "empty" ? null : { sprite: this.inventory.right_hand };
 
 
-
-  var elements = {
-    id: {sprite: { bank: "screen1_Midnight", state: "id"}, x: IdX, y: IdY, id: 0 },
-    belt: {sprite: { bank: "screen1_Midnight", state: "belt"}, x: BeltX, y: BeltY, id: 1 },
-    back: {sprite: { bank: "screen1_Midnight", state: "back"}, x: BackX, y: BackY, id: 2 },
-    act_equip: {sprite: { bank: "screen1_Midnight", state: "act_equip"}, x: RSwapX, y: RSwapY, id: 3 },
-    e: {sprite: { bank: "screen1_Midnight", state: "hand1"}, x: RSwapX, y: RSwapY, id: 4 },
-    swap: {sprite: { bank: "screen1_Midnight", state: "hand2"}, x: LSwapX, y: LSwapY, id: 5 },
-    right_hand: {sprite: { bank: "screen1_Midnight", state: RightHandState, direction: "north" }, x: RightHandX, y: RightHandY, id: 6, contains: RightHandContents },
-    left_hand: {sprite: { bank: "screen1_Midnight", state: LeftHandState, direction: "south" }, x: LeftHandX, y: LeftHandY, id: 7, contains: LeftHandContents },
-    left_pocket: {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket1X, y: Pocket1Y, id: 8 },
-    right_pocket: {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket2X, y: Pocket2Y, id: 9 }
-  };
+  var elements = [
+    {sprite: { bank: "screen1_Midnight", state: "id"}, x: IdX, y: IdY, id: 0 },
+    {sprite: { bank: "screen1_Midnight", state: "belt"}, x: BeltX, y: BeltY, id: 1 },
+    {sprite: { bank: "screen1_Midnight", state: "back"}, x: BackX, y: BackY, id: 2 },
+    {sprite: { bank: "screen1_Midnight", state: "act_equip"}, x: RSwapX, y: RSwapY, id: 3 },
+    {sprite: { bank: "screen1_Midnight", state: "hand1"}, x: RSwapX, y: RSwapY, id: 4 },
+    {sprite: { bank: "screen1_Midnight", state: "hand2"}, x: LSwapX, y: LSwapY, id: 5 },
+    {sprite: { bank: "screen1_Midnight", state: RightHandState, direction: "north" }, x: RightHandX, y: RightHandY, id: 6, contains: RightHandContents },
+    {sprite: { bank: "screen1_Midnight", state: LeftHandState, direction: "south" }, x: LeftHandX, y: LeftHandY, id: 7, contains: LeftHandContents },
+    {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket1X, y: Pocket1Y, id: 8 },
+    {sprite: { bank: "screen1_Midnight", state: "pocket" }, x: Pocket2X, y: Pocket2Y, id: 9 }
+  ];
 
   this.load_interface_elements( elements );
 };
@@ -157,10 +156,8 @@ Display.prototype.add_interface_element = function( element ) {
 Display.prototype.load_interface_elements = function( elements ) {
   this.interfaceHitBufferCtx.clearRect(0,0, this.interfaceHitBuffer.width - 1, this.interfaceHitBuffer.height - 1);
 
-  for( var key in elements ) {
-    var element = elements[key];
-
-    this.add_interface_element( element );
+  for( var i = 0; i < elements.length; i++ ) {
+    this.add_interface_element( elements[i] );
   }
 
   this.interface_elements = elements;
